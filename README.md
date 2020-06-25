@@ -42,11 +42,6 @@ This command can be used to clean up any background processes that might get lef
 test/cleanup.sh
 ```
 
-# Work in progress
-
-A way to put the Operator into a Linux container image and run it as any other normal Operator is still work in progress!  
-Note that, for testing purposes, it will not work on Mac OS (Darwin) until it's been fixed. Some of the commands in Mac OS work in different ways. 
-
 # Miscellaneous
 
 The following commands are useful to follow the progress during testing.  Run them it in a separate terminal. 
@@ -64,4 +59,8 @@ kubectl get pod --selector=operator=$cr --watch --no-headers --ignore-not-found
 kubectl get myapp --watch --no-headers --ignore-not-found
 ```
 
+# Work in progress
+
+A way to put the Operator into a Linux container image and run it as any other normal Operator is still work in progress!  
+Note that, for testing purposes, it will not work on Mac OS (Darwin) until it's been fixed. Some of the commands in Mac OS work in different ways. 
 
