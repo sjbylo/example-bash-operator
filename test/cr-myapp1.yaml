@@ -1,0 +1,9 @@
+apiVersion: "stable.example.com/v1"
+kind: MyApp
+metadata:
+  name: myapp1
+spec:
+  replicas: 2
+  image: busybox
+  command: sleep 99999999
+
