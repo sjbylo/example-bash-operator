@@ -131,15 +131,15 @@ function reconcile {
 		exit 
 	fi	
 		
-	spec_replicas=`echo "$spec" | jq '.spec.replicas' | tr -d \"`
+	spec_replica=`echo "$spec" | jq '.spec.replica' | tr -d \"`
 	spec_image=`echo "$spec" | jq '.spec.image' | tr -d \"`
 	spec_cmd=`echo "$spec" | jq '.spec.command' | tr -d \"`
 
-	log=$log"[$spec_replicas] [$spec_image] [$spec_cmd] "
+	log=$log"[$spec_replica] [$spec_image] [$spec_cmd] "
 
-	if [ ! "$spec_replicas" ] 
+	if [ ! "$spec_replica" ] 
 	then
-		echo EXIT spec_replicas missing
+		echo EXIT spec_replica missing
 		exit 
 	fi
 
@@ -150,22 +150,22 @@ function reconcile {
 		awk '{print $1}' | sort -n`
 	if [ "$pods_running" ]
 	then
-		stat_replicas=`echo "$pods_running" | wc -l`
+		stat_replica=`echo "$pods_running" | wc -l`
 	else
-		stat_replicas=0
+		stat_replica=0
 	fi
 
-	if [ $spec_replicas -lt $stat_replicas ]
+	if [ $spec_replica -lt $stat_replica ]
 	then
 		# Delete pods
-		start=`expr $spec_replicas - $stat_replicas`
+		start=`expr $spec_replica - $stat_replica`
 		log=$log"Adjusting pod count by [$start]"
 		todel=`echo "$pods_running" | tail $start`
 		oc delete --wait=false po $todel >/dev/null
-	elif [ $spec_replicas -gt $stat_replicas ]
+	elif [ $spec_replica -gt $stat_replica ]
 	then
 		# Start pods
-		start=`expr $spec_replicas - $stat_replicas`
+		start=`expr $spec_replica - $stat_replica`
 		log=$log"Adjusting pod count by [$start]"
 		while [ $start -gt 0 ]
 		do
@@ -181,7 +181,7 @@ function reconcile {
 	# write the status into the cr
 	#oc patch myapp $cr --type=json -p '[{"op": "replace", "path": "/status/image", "value": "$stat_image"}]'
 	#oc patch myapp $cr --type=json -p '[{"op": "replace", "path": "/status/command", "value": "$stat_cmd"}]'
-	#oc patch myapp $cr --type=json -p '[{"op": "replace", "path": "/status/replicas", "value": "$stat_replicas"}]'
+	#oc patch myapp $cr --type=json -p '[{"op": "replace", "path": "/status/replica", "value": "$stat_replica"}]'
 	
 	echo "$cr:$log"
   done < .mypipe.$$.$cr

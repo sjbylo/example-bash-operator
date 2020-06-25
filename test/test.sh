@@ -3,12 +3,12 @@
 
 cr=$1 
 
-function setReplicas {
+function setReplica {
   echo -n "setting replica to $1 "
   oc patch myapp $cr --type=json -p '[{"op": "replace", "path": "/spec/replica", "value": '$1'}]' >/dev/null
 }
 
-function checkReplicas {
+function checkReplica {
   test $1 -eq `oc get po --selector=operator=$cr | grep -e "\bRunning\b" -e "\bContainerCreating\b" -e "\bPending\b" | wc -l`
 }
 
@@ -41,15 +41,15 @@ while true
 do
   echo
   echo Starting tests ... 
-  x=`echo $(( RANDOM % 5 ))`;  setReplicas $x;sleep 6;checkReplicas $x && echo PASS || stop
-  x=`echo $(( RANDOM % 5 ))`;  setReplicas $x;sleep 6;checkReplicas $x && echo PASS || stop
-  y=`echo $(( RANDOM % 3+1))`;delPod $y     ;sleep 6;checkReplicas $x && echo PASS || stop
-  y=`echo $(( RANDOM % 3+1))`;delPod $y     ;sleep 6;checkReplicas $x && echo PASS || stop
-  y=`echo $(( RANDOM % 3+1))`;addPod $y     ;sleep 6;checkReplicas $x && echo PASS || stop 
-  x=`echo $(( RANDOM % 5 ))`;  setReplicas $x;sleep 6;checkReplicas $x && echo PASS || stop
-  y=`echo $(( RANDOM % 3+1))`;delPod $y     ;sleep 6;checkReplicas $x && echo PASS || stop
-  y=`echo $(( RANDOM % 3+1))`;delPod $y     ;sleep 6;checkReplicas $x && echo PASS || stop
-  x=`echo $(( RANDOM % 10))`;  setReplicas $x;sleep 6;checkReplicas $x && echo PASS || stop
+  x=`echo $(( RANDOM % 5 ))`;  setReplica $x;sleep 6;checkReplica $x && echo PASS || stop
+  x=`echo $(( RANDOM % 5 ))`;  setReplica $x;sleep 6;checkReplica $x && echo PASS || stop
+  y=`echo $(( RANDOM % 3+1))`;delPod $y     ;sleep 6;checkReplica $x && echo PASS || stop
+  y=`echo $(( RANDOM % 3+1))`;delPod $y     ;sleep 6;checkReplica $x && echo PASS || stop
+  y=`echo $(( RANDOM % 3+1))`;addPod $y     ;sleep 6;checkReplica $x && echo PASS || stop 
+  x=`echo $(( RANDOM % 5 ))`;  setReplica $x;sleep 6;checkReplica $x && echo PASS || stop
+  y=`echo $(( RANDOM % 3+1))`;delPod $y     ;sleep 6;checkReplica $x && echo PASS || stop
+  y=`echo $(( RANDOM % 3+1))`;delPod $y     ;sleep 6;checkReplica $x && echo PASS || stop
+  x=`echo $(( RANDOM % 10))`;  setReplica $x;sleep 6;checkReplica $x && echo PASS || stop
   echo
 done
 
