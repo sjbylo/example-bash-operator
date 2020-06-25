@@ -4,7 +4,8 @@ This simple Operator, written in bash, shows how to create an Operator to manage
 
 # Testing the Operator
 
-The Operator can be tested by running it on your Linux machine.  A way to put it into a Linux container and run it as any other normal Operator is still work in progress!  It has been tested on RHEL 7.5 and Fedora 32.  Note that will not work on Mac OS (Darwin) until it's been fixed.
+The Operator can be tested by running it on your Linux machine.  
+It has been tested on RHEL 7.5 and Fedora 32. 
 
 Ensure kubectl is installed and authenticated with a Kubernetes or OpenShift cluster.
 
@@ -41,25 +42,26 @@ This command can be used to clean up any background processes that might get lef
 test/cleanup.sh
 ```
 
+# Work in progress
+
+A way to put the Operator into a Linux container image and run it as any other normal Operator is still work in progress!  
+Note that, for testing purposes, it will not work on Mac OS (Darwin) until it's been fixed. Some of the commands in Mac OS work in different ways. 
+
 # Miscellaneous
 
-The following commands might be useful to follow what is happening.  Run them in separate terminal. 
+The following commands are useful to follow the progress during testing.  Run them it in a separate terminal. 
 
 ```
-watch -n1 "kubectl get po; ps -ef | grep 'kubectl get ' | grep -v ' watch' | grep -v grep"
+cr=myapp1
+watch -n1 "kubectl get po --selector=operator=$cr; ps -ef | grep 'kubectl get ' | grep -v ' watch' | grep -v grep"
 ```
 
 Commands used to set a watch on events related to this Operator (the CR and its pod child objects)
 
 ```
-cr=myapp
+cr=myapp1
 kubectl get pod --selector=operator=$cr --watch --no-headers --ignore-not-found
 kubectl get myapp --watch --no-headers --ignore-not-found
 ```
 
-```
-cr=myapp
-watch -n1 "kubectl get po --selector=operator=$cr; ps -ef | grep 'kubectl get ' | grep -v ' watch' | grep -v grep"
-do kubectl get pod --selector=operator=$cr --watch --no-headers --ignore-not-found
-```
 
