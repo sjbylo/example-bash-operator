@@ -16,7 +16,7 @@ function delPod {
   echo -n "deleteing $1 pod(s) "
   oc get po --selector=operator=$cr --no-headers | \
     grep -e "\bRunning\b" -e "\bContainerCreating\b" -e "\bPending\b" | tail -$1 | awk '{print $1}' | \
-    xargs oc delete po --wait=false >/dev/null
+    xargs oc delete po --wait=false >/dev/null 2>/dev/null
 }
 
 function addPod {
@@ -31,7 +31,7 @@ function addPod {
 }
 
 function stop {
-  echo Failed test
+  echo FAIL
   exit 1
 }
 
@@ -41,15 +41,15 @@ while true
 do
   echo
   echo Starting tests ... 
-  x=`echo $(( RANDOM % 5 ))`;setReplicas $x;sleep 6;checkReplicas $x && echo PASS || stop
-  x=`echo $(( RANDOM % 5 ))`;setReplicas $x;sleep 6;checkReplicas $x && echo PASS || stop
-  y=`echo $(( RANDOM % 3 +1))`;delPod $y     ;sleep 6;checkReplicas $x && echo PASS || stop
-  y=`echo $(( RANDOM % 3 +1))`;delPod $y     ;sleep 6;checkReplicas $x && echo PASS || stop
-  y=`echo $(( RANDOM % 3 +1))`;addPod $y     ;sleep 6;checkReplicas $x && echo PASS || stop 
-  x=`echo $(( RANDOM % 5 ))`;setReplicas $x;sleep 6;checkReplicas $x && echo PASS || stop
-  y=`echo $(( RANDOM % 3 +1))`;delPod $y     ;sleep 6;checkReplicas $x && echo PASS || stop
-  y=`echo $(( RANDOM % 3 +1))`;delPod $y     ;sleep 6;checkReplicas $x && echo PASS || stop
-  x=`echo $(( RANDOM % 10))`;setReplicas $x;sleep 6;checkReplicas $x && echo PASS || stop
+  x=`echo $(( RANDOM % 5 ))`;  setReplicas $x;sleep 6;checkReplicas $x && echo PASS || stop
+  x=`echo $(( RANDOM % 5 ))`;  setReplicas $x;sleep 6;checkReplicas $x && echo PASS || stop
+  y=`echo $(( RANDOM % 3+1))`;delPod $y     ;sleep 6;checkReplicas $x && echo PASS || stop
+  y=`echo $(( RANDOM % 3+1))`;delPod $y     ;sleep 6;checkReplicas $x && echo PASS || stop
+  y=`echo $(( RANDOM % 3+1))`;addPod $y     ;sleep 6;checkReplicas $x && echo PASS || stop 
+  x=`echo $(( RANDOM % 5 ))`;  setReplicas $x;sleep 6;checkReplicas $x && echo PASS || stop
+  y=`echo $(( RANDOM % 3+1))`;delPod $y     ;sleep 6;checkReplicas $x && echo PASS || stop
+  y=`echo $(( RANDOM % 3+1))`;delPod $y     ;sleep 6;checkReplicas $x && echo PASS || stop
+  x=`echo $(( RANDOM % 10))`;  setReplicas $x;sleep 6;checkReplicas $x && echo PASS || stop
   echo
 done
 
