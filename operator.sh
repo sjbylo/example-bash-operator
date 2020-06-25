@@ -56,18 +56,13 @@ function ctrl_c() {
 
 function reconcile {
   cr=$1
-  #before=`date +%s%3N`
-  #declare -A times
-  #declare -A lastlines
-
+  before=`date +%s%3N`
   backlog=
 
   while true
   do
-	#read line 
-	echo "read -t1 line" >&2
 	#[ "$backlog" ] && read -t1 line || read line 
-	read -t1 line   # We check every 2 seconds if there's a "skipped event" to process
+	read -t1 line   # We check every second if there's a "skipped event" to process
 	ret=$?
 	echo "line=[$line] ret=$ret" >&2 
 
@@ -76,43 +71,38 @@ function reconcile {
 
 	if [ $ret -eq 142 ]
 	then
-		echo -n \|
+		echo -n \| >&2
 		if [ "$backlog" ]
 		then
-			echo -n R #>&2
+			echo -n R >&2
 			line=$backlog
 		else
-			echo -n S #>&3
+			echo -n S >&3
 			continue
 		fi
 	elif [ $ret -gt 1 ]
-	#if [ $ret -gt 1 ]
 	then
 		echo READ ERROR $? exiting ... >&2  # Should never get here
 		exit 1
 	fi
 
   	now=`date +%s%3N`
-	#echo `expr $now - 3000 - $before` >&2
 
 	# If still within 3s from the last execution?...
 	if [ $before -gt `expr $now - 3000` ]
 	then
 		backlog=$line
-		echo -n . #>&2
+		echo -n . >&2
 		continue
 	fi
 
 	before=$now
 	backlog=
-	echo
+	echo >&2
 
 	line=`echo $line | tr -s " "`
-	#type=`echo $line | cut -d: -f1`
-	#ma=`echo $line | cut -d: -f2-`
 	obj=`echo $line | awk '{print $1}'`
 
-	#log="$type "
 	log=
 	log=$log"event=[$line] "
 
@@ -135,11 +125,11 @@ function reconcile {
 	spec_image=`echo "$spec" | jq '.spec.image' | tr -d \"`
 	spec_cmd=`echo "$spec" | jq '.spec.command' | tr -d \"`
 
-	log=$log"[$spec_replica] [$spec_image] [$spec_cmd] "
+	log=$log"spec=[$spec_replica, $spec_image, $spec_cmd] "
 
 	if [ ! "$spec_replica" ] 
 	then
-		echo EXIT spec_replica missing
+		echo "EXIT spec_replica missing!!"
 		exit 
 	fi
 
@@ -183,7 +173,7 @@ function reconcile {
 	#oc patch myapp $cr --type=json -p '[{"op": "replace", "path": "/status/command", "value": "$stat_cmd"}]'
 	#oc patch myapp $cr --type=json -p '[{"op": "replace", "path": "/status/replica", "value": "$stat_replica"}]'
 	
-	echo "$cr:$log"
+	echo "$log"
   done < .mypipe.$$.$cr
 }
 
@@ -248,7 +238,7 @@ done
 
 for cr in `echo "$cr_list" | awk '{print $1}'`
 do
-	echo Starting reconcile function for $cr
+	echo Starting reconcile function for Custom Resource:$cr
 	reconcile $cr &
 done
 
