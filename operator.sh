@@ -57,7 +57,7 @@ function reconcile {
   before=`date +%s%3N`
   backlog=
 
-  # Loop through all the events from the watched objects.  Supress events if they come fast (withing 3 seconds)
+  # Loop through all the events from the watched objects.  Suppress events if they come fast (within 3 seconds)
   while true
   do
 	#[ "$backlog" ] && read -t1 line || read line 
