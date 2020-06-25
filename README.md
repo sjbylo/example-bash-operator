@@ -1,10 +1,10 @@
-# Simple example operator in bash
+# Simple example Operator in bash
 
-This simple operator, written in bash, shows how to create an operator to manage a set of pods, similar how a replica set works.   
+This simple Operator, written in bash, shows how to create an Operator to manage a set of pods, similar how a replica set works.   
 
 # Test it by running it locally
 
-The operator can be tested by running it on your Linux machine.  It has been tested on RHEL 7.5 and Fedora 32. Note that it does not work on Mac OS (Darwin).  
+The Operator can be tested by running it on your Linux machine.  It has been tested on RHEL 7.5 and Fedora 32. Note that it does not work on Mac OS (Darwin).  
 
 Ensure kubectl is authenticated with a Kube test cluster.
 
@@ -15,10 +15,10 @@ kubectl create -f test/crd-myapp.yaml
 kubectl create -f test/cr-myapp1.yaml
 ```
 
-Start the operator:
+Start the Operator:
 
 ```
-operator.sh   # Hit Ctr-C to stop it!
+./operator.sh   # Hit Ctr-C to stop it!
 ```
 
 Start the test script:
@@ -27,7 +27,7 @@ Start the test script:
 test/test.sh
 ```
 
-This command can be used to clean up any background processes:
+This command can be used to clean up any background processes that might get left behind after the Operator is interrupted with Ctrl-C:
 
 ```
 kill `ps -ef | grep op.sh| grep -v -e grep -e vi | awk '{$3 == 1; print $2}'`
@@ -41,7 +41,7 @@ The following commands might be useful to follow what is happening.  Run them in
 watch -n1 "kubectl get po; ps -ef | grep 'kubectl get ' | grep -v ' watch' | grep -v grep"
 ```
 
-# Commands used to set a watch on events related to this operator (the CR and its pod child objects)
+# Commands used to set a watch on events related to this Operator (the CR and its pod child objects)
 
 ```
 cr=myapp
