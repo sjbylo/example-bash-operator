@@ -28,7 +28,7 @@ Start the Operator:
 ./operator.sh 2>err.log; sleep 1; test/cleanup.sh    # Enter Ctr-C to stop it!
 ```
 
-Run the test script.  The test script works by setting the CR replica value and by deleting and adding pods.  The number of pods should always be kept to the desired state by the Operator, as defined by .spec.replica in the CR.
+A test script is provided that works by setting the CR replica value and by deleting and adding pods.  The number of pods should always be kept to the desired state by the Operator, as defined by .spec.replica in the CR.
 
 Start the test script:
 
@@ -36,7 +36,7 @@ Start the test script:
 test/test.sh myapp1
 ```
 
-This command can be used to clean up any background processes that might get left behind after the Operator is interrupted with Ctrl-C:
+A cleanup script can be used to remove any background processes that might get left behind after the Operator is stopped:
 
 ```
 test/cleanup.sh
