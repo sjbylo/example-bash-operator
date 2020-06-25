@@ -2,13 +2,13 @@
 
 This simple operator, written in bash, shows how to create an operator to manage a set of pods, similar how a replica set works.   
 
-# Test it by running it localy
+# Test it by running it locally
 
 The operator can be tested by running it on your Linux machine.  It has been tested on RHEL 7.5 and Fedora 32. Note that it does not work on Mac OS (Darwin).  
 
 Ensure kubectl is authenticated with a Kube test cluster.
 
-First, create the Custom Resource Defintiion and an example Custom Resource:
+First, create the Custom Resource Definition and an example Custom Resource:
 
 ```
 kubectl create -f test/crd-myapp.yaml
@@ -27,7 +27,7 @@ Start the test script:
 test/test.sh
 ```
 
-This command can be used to clean up any bacxkground processes:
+This command can be used to clean up any background processes:
 
 ```
 kill `ps -ef | grep op.sh| grep -v -e grep -e vi | awk '{$3 == 1; print $2}'`
@@ -35,7 +35,7 @@ kill `ps -ef | grep op.sh| grep -v -e grep -e vi | awk '{$3 == 1; print $2}'`
 
 # Miscellaneous
 
-The followoing commands might be useful to follow what is happening.  Run them in seperate teminasl. 
+The following commands might be useful to follow what is happening.  Run them in separate terminal. 
 
 ```
 watch -n1 "kubectl get po; ps -ef | grep 'kubectl get ' | grep -v ' watch' | grep -v grep"
