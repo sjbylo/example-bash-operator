@@ -24,7 +24,7 @@ oc get myapp myapp1 -o yaml
 Start the Operator:
 
 ```
-./operator.sh   # Hit Ctr-C to stop it!
+./operator.sh; sleep 1; test/cleanup.sh    # Enter Ctr-C to stop it!
 ```
 
 A test script works by setting the CR replica value and by deleting and adding pods.  The number of pods should always be kept to the desired state, as defined by .spec.replica in the CR.
@@ -37,7 +37,7 @@ test/test.sh
 This command can be used to clean up any background processes that might get left behind after the Operator is interrupted with Ctrl-C:
 
 ```
-kill `ps -ef | grep op.sh| grep -v -e grep -e vi | awk '{$3 == 1; print $2}'`
+test/cleanup.sh
 ```
 
 # Miscellaneous
