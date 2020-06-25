@@ -3,7 +3,7 @@ kind: MyApp
 metadata:
   name: myapp2
 spec:
-  replicas: 2
+  replica: 2
   image: busybox
   command: sleep 99999999
 

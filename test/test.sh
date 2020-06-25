@@ -4,8 +4,8 @@
 cr=$1 
 
 function setReplicas {
-  echo -n "setting replicas to $1 "
-  oc patch myapp $cr --type=json -p '[{"op": "replace", "path": "/spec/replicas", "value": '$1'}]' >/dev/null
+  echo -n "setting replica to $1 "
+  oc patch myapp $cr --type=json -p '[{"op": "replace", "path": "/spec/replica", "value": '$1'}]' >/dev/null
 }
 
 function checkReplicas {

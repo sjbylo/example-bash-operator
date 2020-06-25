@@ -15,7 +15,7 @@ kubectl create -f test/crd-myapp.yaml
 kubectl create -f test/cr-myapp1.yaml
 ```
 
-Have a look at the CR.  Note that replicas is set to the required number of pods.
+Have a look at the "myapp1" CR.  Note that "replica" is set to the required number of pods.
 
 ```
 oc get myapp myapp1 -o yaml 
@@ -27,7 +27,7 @@ Start the Operator:
 ./operator.sh   # Hit Ctr-C to stop it!
 ```
 
-A test script works by setting the CR replicas value and by deleting and adding pods.  The number of pods should always be kept to the desired state, as defined by .spec.replicas in the CR.
+A test script works by setting the CR replica value and by deleting and adding pods.  The number of pods should always be kept to the desired state, as defined by .spec.replica in the CR.
 Start the test script:
 
 ```
