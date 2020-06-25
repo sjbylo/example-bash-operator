@@ -45,10 +45,8 @@ function ctrl_c() {
 
 	cleanup
 
-	echo Killing subprocesses `cat /tmp/.$base.pids` ...
+	echo Stopping watch subprocesses ...
 	kill `cat /tmp/.$base.pids` 2>/dev/null
-
-	##sleep 1 ; kill -9 `cat /tmp/.$base.pids`
 
 	echo Operator $base exiting now ...
 	exit 0

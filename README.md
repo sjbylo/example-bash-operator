@@ -24,7 +24,7 @@ oc get myapp myapp1 -o yaml | grep replica
 Start the Operator:
 
 ```
-./operator.sh; sleep 1; test/cleanup.sh    # Enter Ctr-C to stop it!
+./operator.sh 2>err.log; sleep 1; test/cleanup.sh    # Enter Ctr-C to stop it!
 ```
 
 Run the test script.  The test script works by setting the CR replica value and by deleting and adding pods.  The number of pods should always be kept to the desired state by the Operator, as defined by .spec.replica in the CR.
