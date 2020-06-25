@@ -1,18 +1,24 @@
-# Simple example Operator in bash
+# Example Operator in bash
 
-This simple Operator, written in bash, shows how to create an Operator to manage a set of pods, similar how a replica set works.   
+This simple Operator, written in bash, shows how to create an Operator to manage a set of pods, similar to the way a replica-set works.   
 
 # Test it by running it locally
 
-The Operator can be tested by running it on your Linux machine.  It has been tested on RHEL 7.5 and Fedora 32. Note that it does not work on Mac OS (Darwin).  
+The Operator can be tested by running it on your Linux machine.  It has been tested on RHEL 7.5 and Fedora 32.  Note that it does not work on Mac OS (Darwin).  
 
-Ensure kubectl is authenticated with a Kube test cluster.
+Ensure kubectl is authenticated with a Kubernetes or OpenShift cluster.
 
-First, create the Custom Resource Definition and an example Custom Resource:
+First, create the Custom Resource Definition (CRD) and an example Custom Resource (CR):
 
 ```
 kubectl create -f test/crd-myapp.yaml
 kubectl create -f test/cr-myapp1.yaml
+```
+
+Have a look at the CR.  Note that replicas is set to the required number of pods.
+
+```
+oc get myapp myapp1 -o yaml 
 ```
 
 Start the Operator:
@@ -21,6 +27,7 @@ Start the Operator:
 ./operator.sh   # Hit Ctr-C to stop it!
 ```
 
+A test script works by setting the CR replicas value and by deleting and adding pods.  The number of pods should always be kept to the desired state, as defined by .spec.replicas in the CR.
 Start the test script:
 
 ```
