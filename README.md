@@ -4,7 +4,7 @@ This simple Operator, written in bash, shows how to create an Operator to manage
 
 # Testing the Operator
 
-The Operator can be tested by running it on your Linux machine.  A way to put it into a Linuc container and run it as any other normal Operator is still work in progress!  It has been tested on RHEL 7.5 and Fedora 32.  Note that will not work on Mac OS (Darwin) until it's been fixed.
+The Operator can be tested by running it on your Linux machine.  A way to put it into a Linux container and run it as any other normal Operator is still work in progress!  It has been tested on RHEL 7.5 and Fedora 32.  Note that will not work on Mac OS (Darwin) until it's been fixed.
 
 Ensure kubectl is installed and authenticated with a Kubernetes or OpenShift cluster.
 
