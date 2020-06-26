@@ -41,6 +41,16 @@ A cleanup script can be used to remove any background processes that might get l
 test/cleanup.sh
 ```
 
+# Dockerfile
+
+A dockerfile is provided to build a container image for the Operator. Note that this has not been fully tested!!
+
+To allow the Operator, running in a container, to access the Kubernetes API, this is one quick way of allowing it:
+
+```
+oc policy add-role-to-user admin -z default
+```
+
 # Miscellaneous
 
 The following commands are useful to follow the progress during testing.  Run them it in a separate terminal. 
