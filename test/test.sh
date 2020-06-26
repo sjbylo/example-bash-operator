@@ -48,15 +48,15 @@ while true
 do
   echo
   echo Starting tests ... 
-  x=`echo $(( RANDOM % 5 ))`; setReplica $x; sleep 6;checkReplica $x && echo PASS || stop
-  x=`echo $(( RANDOM % 5 ))`; setReplica $x; sleep 6;checkReplica $x && echo PASS || stop
-  y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep 6;checkReplica $x && echo PASS || stop
-  y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep 6;checkReplica $x && echo PASS || stop
-  y=`echo $(( RANDOM % 3+1))`;addPod $y;     sleep 6;checkReplica $x && echo PASS || stop 
-  x=`echo $(( RANDOM % 5 ))`; setReplica $x; sleep 6;checkReplica $x && echo PASS || stop
-  y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep 6;checkReplica $x && echo PASS || stop
-  y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep 6;checkReplica $x && echo PASS || stop
-  x=`echo $(( RANDOM % 10))`; setReplica $x; sleep 6;checkReplica $x && echo PASS || stop
+  x=`echo $(( RANDOM % 5 ))`; setReplica $x; sleep 8;checkReplica $x && echo PASS || stop
+  x=`echo $(( RANDOM % 5 ))`; setReplica $x; sleep 8;checkReplica $x && echo PASS || stop
+  y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep 8;checkReplica $x && echo PASS || stop
+  y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep 8;checkReplica $x && echo PASS || stop
+  y=`echo $(( RANDOM % 3+1))`;addPod $y;     sleep 8;checkReplica $x && echo PASS || stop 
+  x=`echo $(( RANDOM % 5 ))`; setReplica $x; sleep 8;checkReplica $x && echo PASS || stop
+  y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep 8;checkReplica $x && echo PASS || stop
+  y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep 8;checkReplica $x && echo PASS || stop
+  x=`echo $(( RANDOM % 10))`; setReplica $x; sleep 8;checkReplica $x && echo PASS || stop
   echo
 done
 
