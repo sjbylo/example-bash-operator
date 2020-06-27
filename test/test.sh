@@ -31,8 +31,7 @@ function addPod {
   i=0
   while [ $i -lt $1 ]
   do
-      oc run $cr-$RANDOM --wait=false --image=busybox --generator=run-pod/v1 \
-        -l operator=$cr -- sleep 9999999 >/dev/null
+      oc run $cr-$RANDOM --wait=false --image=busybox -l operator=$cr -- sleep 9999999 >/dev/null
       let i=$i+1
   done
 }
