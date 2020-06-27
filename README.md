@@ -23,7 +23,7 @@ kubectl create -f test/cr-myapp1.yaml
 Have a look at the "myapp1" Customer Resource.  Note that "replica" is set to the required number of pods.
 
 ```
-oc get myapp myapp1 -o yaml | grep replica
+kubectl get myapp myapp1 -o yaml | grep replica
 ```
 
 Now, decide to run the Operator either on a Linux machine or in Kubernetes.
@@ -31,7 +31,7 @@ Now, decide to run the Operator either on a Linux machine or in Kubernetes.
 
 ## Start the Operator in Kubernetes
 
-To allow the Operator to access the Kubernetes API, this is one quick way of allowing it:
+To allow the Operator to access the Kubernetes API, this is one quick way of allowing it on OpenShift:
 
 ```
 oc policy add-role-to-user cluster-admin -z default
@@ -40,8 +40,21 @@ oc policy add-role-to-user cluster-admin -z default
 Launch the Operator:
 
 ```
-oc run bash-op --generator=run-pod/v1 --image=quay.io/sjbylo/bash-operator:latest
+kubectl run bash-op --generator=run-pod/v1 --image=quay.io/sjbylo/bash-operator:latest
 ```
+
+View the log output:
+
+```
+while true; do kubectl logs bash-op -f; sleep 1; done
+```
+
+Stop the Operator:
+
+```
+kubectl delete po bash-op
+```
+
 
 ## Start the Operator on a Linux machine
 
