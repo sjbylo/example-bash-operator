@@ -13,7 +13,7 @@ kubectl create namespace operator-test
 kubectl config set-context --current --namespace=operator-test
 ```
 
-As clusterp-admin, create the Custom Resource Definition (CRD) and an example Custom Resource (CR):
+As cluster-admin, create the Custom Resource Definition (CRD) and an example Custom Resource (CR):
 
 ```
 kubectl create -f test/crd-myapp.yaml  
