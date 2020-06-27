@@ -16,12 +16,12 @@ function setReplica {
 }
 
 function checkReplica {
-  test $1 -eq `oc get po --selector=operator=$cr | grep -e "\bRunning\b" -e "\bContainerCreating\b" -e "\bPending\b" | wc -l`
+  test $1 -eq `oc get po --selector=operator=$cr 2>/dev/null| grep -e "\bRunning\b" -e "\bContainerCreating\b" -e "\bPending\b" | wc -l`
 }
 
 function delPod {
   echo -n "Deleteing $1 pod(s) "
-  oc get po --selector=operator=$cr --no-headers | \
+  oc get po --selector=operator=$cr --no-headers 2>/dev/null | \
     grep -e "\bRunning\b" -e "\bContainerCreating\b" -e "\bPending\b" | tail -$1 | awk '{print $1}' | \
     xargs oc delete po --wait=false >/dev/null 2>/dev/null
 }

@@ -41,7 +41,6 @@ function save_pid {
 	echo $2 >> $tempfile.$1.pids
 }
 
-# trap ctrl-c and call ctrl_c()
 function get_pids {
 	# $1 is cr name
 	cat $tempfile.$1.pids
@@ -49,6 +48,7 @@ function get_pids {
 
 # trap ctrl-c and call ctrl_c()
 trap ctrl_c INT
+trap ctrl_c TERM
 
 function ctrl_c() {
 	echo "CTRL-C trapped"
@@ -86,21 +86,21 @@ function reconcile {
 		#[ "$backlog" ] && read -t1 line || read line 
 		read -t1 line   # We check every second if there's a "skipped event" to process
 		ret=$?
-		echo "line=[$line] ret=$ret" >&2 
+		[ "$DEBUG" ] && echo "line=[$line] ret=$ret" >&2 
 
 		# If read timed out
 		if [ $ret -eq 142 ]
 		then
 			# If there is a backlog event that could be processed
-			echo -n \| >&2
+			[ "$DEBUG" ] && echo -n \| >&2
 			if [ "$backlog" ]
 			then
 				# Process the backlog
-				echo -n R >&2
+				[ "$DEBUG" ] && echo -n R >&2
 				line=$backlog
 			else
 				# Do nothing this time
-				echo -n S >&2
+				[ "$DEBUG" ] && echo -n S >&2
 				continue
 			fi
 		elif [ $ret -gt 1 ]
@@ -117,13 +117,13 @@ function reconcile {
 		then
 			# Remember the event and skip
 			backlog=$line
-			echo -n . >&2
+			[ "$DEBUG" ] && echo -n . >&2
 			continue
 		fi
 
 		before=$now
 		backlog=
-		echo >&2
+		[ "$DEBUG" ] && echo >&2
 
 		line=`echo $line | tr -s " "`
 		obj=`echo $line | awk '{print $1}'`
@@ -271,12 +271,12 @@ function main_manager {
 		do
 			if [ "${cr_map[$cr]}" ]
 			then
-				echo CR $cr controller already started >&2
+				[ "$DEBUG" ] && echo CR $cr controller already started >&2
 			else
 				echo Starting controller for CR $cr >&2
 				start_controller $cr
 				cr_map[$cr]=1
-				echo ${cr_map[$cr]} >&2
+				[ "$DEBUG" ] && echo ${cr_map[$cr]} >&2
 				
 			fi
 		done
@@ -284,12 +284,12 @@ function main_manager {
 		# Check for deleted CRs
 		for cr in "${!cr_map[@]}"
 		do
-			echo cr=$cr >&2
+			[ "$DEBUG" ] && echo cr=$cr >&2
 			if ! kubectl get $cr_name $cr --no-headers >/dev/null
 			then
 				echo Stopping controller for CR $cr >&2
 				sleep 5 # Give time to delete all pods
-				echo cr=$cr >&2
+				[ "$DEBUG" ] && echo cr=$cr >&2
 				#### stop_controller $cr &
 				sleep 2
 				unset cr_map[$cr]
