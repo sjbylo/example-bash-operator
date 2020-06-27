@@ -1,11 +1,11 @@
 # Example Kubernetes Operator in bash
 
-This simple Operator is written in bash and shows how to create an Operator to manage a set of pods, similar to the way a typical Kubernetes replica-set works.  
+This simple Operator is written entirely in bash and shows how to create an Operator to manage a set of pods, similar to the way a typical Kubernetes replica-set works.  
 It always ensures that the expected number of pods are running.
 
 # Testing the Operator
 
-The Operator can be tested by running it directly on a Linux machine or in a pod.  It has been tested on RHEL 7.5 and Fedora 32 and on Kubernetes 1.17 (OpenShift 4.4)
+The Operator can be tested by running it directly on a Linux machine or in a pod.  It has been tested on RHEL 7.5 and Fedora 32 and on Minishift and Kubernetes 1.17 (OpenShift 4.4)
 
 Create and switch to a namespace:
 
@@ -27,7 +27,7 @@ Have a look at the "myapp1" CR.  Note that "replica" is set to the required numb
 oc get myapp myapp1 -o yaml | grep replica
 ```
 
-Now, decide to run the Operator on a Linux machine or in Kuebernetes pod.
+Now, decide to run the Operator on a Linux machine or in Kubernetes pod.
 
 ## Run the Operator in a pod
 
@@ -45,7 +45,7 @@ oc policy add-role-to-user cluster-admin -z default
 
 # Start the Operator on a Linux machine
 
-On the Linux maxhine, ensure kubectl is installed and authenticated with a Kubernetes or OpenShift cluster.  Also ensure that "jq" is installed on the Linux machine. 
+On the Linux machine, ensure kubectl is installed and authenticated with a Kubernetes or OpenShift cluster.  Also ensure that "jq" is installed on the Linux machine. 
 
 Run the Operator:
 
