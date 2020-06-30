@@ -12,18 +12,18 @@ fi
 
 function setReplica {
   echo -n "Setting replica to $1 "
-  oc patch myapp $cr --type=json -p '[{"op": "replace", "path": "/spec/replica", "value": '$1'}]' >/dev/null
+  kubectl patch myapp $cr --type=json -p '[{"op": "replace", "path": "/spec/replica", "value": '$1'}]' >/dev/null
 }
 
 function checkReplica {
-  test $1 -eq `oc get po --selector=operator=$cr 2>/dev/null| grep -e "\bRunning\b" -e "\bContainerCreating\b" -e "\bPending\b" | wc -l`
+  test $1 -eq `kubectl get po --selector=operator=$cr 2>/dev/null| grep -e "\bRunning\b" -e "\bContainerCreating\b" -e "\bPending\b" | wc -l`
 }
 
 function delPod {
   echo -n "Deleteing $1 pod(s) "
-  oc get po --selector=operator=$cr --no-headers 2>/dev/null | \
+  kubectl get po --selector=operator=$cr --no-headers 2>/dev/null | \
     grep -e "\bRunning\b" -e "\bContainerCreating\b" -e "\bPending\b" | tail -$1 | awk '{print $1}' | \
-    xargs oc delete po --wait=false >/dev/null 2>/dev/null
+    xargs kubectl delete po --wait=false >/dev/null 2>/dev/null
 }
 
 function addPod {
@@ -31,7 +31,8 @@ function addPod {
   i=0
   while [ $i -lt $1 ]
   do
-      oc run $cr-$RANDOM --wait=false --image=busybox -l operator=$cr -- sleep 9999999 >/dev/null
+      $kubectl run $cr-$RANDOM --generator=run-pod/v1 --wait=false --image=busybox -l operator=$cr -- sleep 9999999 >/dev/null 2>&1
+      kubectl run $cr-$RANDOM --wait=false --image=busybox -l operator=$cr -- sleep 9999999 >/dev/null 2>&1
       let i=$i+1
   done
 }

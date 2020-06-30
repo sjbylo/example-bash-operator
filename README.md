@@ -40,19 +40,25 @@ oc policy add-role-to-user cluster-admin -z default
 Launch the Operator:
 
 ```
-kubectl run bash-op --generator=run-pod/v1 --image=quay.io/sjbylo/bash-operator:latest
+kubectl run bash-operator --generator=run-pod/v1 --image=quay.io/sjbylo/bash-operator:latest
 ```
 
 View the log output:
 
 ```
-while true; do kubectl logs bash-op -f; sleep 1; done
+while true; do kubectl logs bash-operator -f; sleep 1; done
 ```
 
 Stop the Operator:
 
 ```
-kubectl delete po bash-op
+kubectl delete po bash-operator
+```
+
+Alternatively, instead of using "kubectl run", you can create a deployment:
+
+```
+kubectl create deployment bash-operator --image=bash-operator
 ```
 
 
@@ -89,9 +95,9 @@ A dockerfile is provided to build a container image for the Operator.
 Here is an example of building the image:
 
 ```
-docker build -t myapp .
-docker tag myapp  quay.io/sjbylo/bash-operator 
-docker push quay.io/sjbylo/bash-operator
+docker build -t bash_operator . && \
+docker tag  bash_operator  quay.io/sjbylo/bash-operator  && \
+docker push quay.io/sjbylo/bash-operator 
 ```
 
 # Miscellaneous
