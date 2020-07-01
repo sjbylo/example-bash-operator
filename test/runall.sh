@@ -27,6 +27,7 @@ function stop_all() {
 	exit 
 }
 
+echo Starting operator from quay.io/sjbylo/bash-operator:$tag ...
 kubectl run bash-operator --env=LOGLEVEL=$d --generator=run-pod/v1 \
 	--image-pull-policy=Always --image=quay.io/sjbylo/bash-operator:$tag || exit 1
 
