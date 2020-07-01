@@ -1,24 +1,20 @@
 #!/bin/bash 
 # MyApp Operator
 
-[ "$DEBUG" = "2" ] && set -x
+[ "$LOGLEVEL" = "2" ] && set -x
 
 # Set the name of the CRD
 CRD_NAME=myapp 
 
-#set -Eeuo pipefail
-#set -o pipefail
-
 base=`basename $0`
+tempfile=/tmp/.op.$CRD_NAME.$$
 
-tempfile=/tmp/.operator.$CRD_NAME.$$
-
-# Clan up temp files for each CR or for all
+# Clean up temp files for each custom resource  or for all
 function cleanup {
 	# $1 is cr
 	if [ "$1" ]
 	then
-		# CR deleted - clean up only the CR related files
+		# Custom resource deleted - clean up only the custom resource  related files
 		rm -f $tempfile.$1.pipe
 		rm -f $tempfile.$1.pids
 	else
@@ -27,16 +23,10 @@ function cleanup {
 	fi
 }
 
-cleanup
-
 function make_random_str {
 	len=${1-6}
 	cat /dev/urandom | tr -dc 'a-z0-9' | fold -w $len | head -n 1
 }
-
-#function testeval {
-#	[ ! "$@" ] && echo "Missing arg(s)" && xit 1
-#}
 
 function save_pid {
 	# $1 is cr name
@@ -49,32 +39,24 @@ function get_pids {
 	cat $tempfile.$1.pids
 }
 
-# trap ctrl-c and call ctrl_c()
-trap ctrl_c INT
-trap ctrl_c TERM
+# trap ctrl-c or terminate and call exit_all()
+trap exit_all INT
+trap exit_all TERM
 
-function ctrl_c() {
-	echo "CTRL-C trapped"
-
-	#kill $$
-	#sleep 2
+function exit_all() {
+	echo "Trap starting ..."
 
 	echo Terminating all watch subprocesses ...
 	kill `cat $tempfile.*.pids` 
 	sleep 1
-	kill `cat $tempfile.*.pids` 
-	sleep 3
-	kill -9 `cat $tempfile.*.pids` 
+	kill `cat $tempfile.*.pids`  2>/dev/null
+	sleep 1
+	kill -9 `cat $tempfile.*.pids`  2>/dev/null
 
 	cleanup
 
 	echo Operator $base exiting now ...
 	exit 0
-}
-
-function my_exit {
-	cleanup
-	exit $1
 }
 
 function reconcile {
@@ -83,33 +65,32 @@ function reconcile {
 	local backlog=
 	local PIPE=$tempfile.$cr.pipe
 
-	# Loop through all the events from the watched objects.  Suppress events if they come fast (within 3 seconds)
+	# Loop through all the events from the watched objects.  Suppress events if they come too fast (within 3 seconds)
 	while true
 		do
 		#[ "$backlog" ] && read -t1 line || read line 
 		read -t1 line   # We check every second if there's a "skipped event" to process
 		ret=$?
-		[ "$DEBUG" ] && echo "line=[$line] ret=$ret" >&2 
+		[ "$LOGLEVEL" ] && echo "line=[$line] ret=$ret" >&2 
 
 		# If read timed out
 		if [ $ret -eq 142 ]
 		then
 			# If there is a backlog event that could be processed
-			[ "$DEBUG" ] && echo -n \| >&2
+			[ "$LOGLEVEL" ] && echo -n \| >&2
 			if [ "$backlog" ]
 			then
 				# Process the backlog
-				[ "$DEBUG" ] && echo -n R >&2
+				[ "$LOGLEVEL" ] && echo -n R >&2
 				line=$backlog
 			else
 				# Do nothing this time
-				[ "$DEBUG" ] && echo -n S >&2
+				[ "$LOGLEVEL" ] && echo -n S >&2
 				continue
 			fi
 		elif [ $ret -gt 1 ]
 		then
-			echo READ ERROR $? exiting ... >&2  # Should never get here
-			my_exit 1
+			echo Warning: read error $? >&2  # Should never get here
 		fi
 
 		# Remember the time now in ms
@@ -120,13 +101,13 @@ function reconcile {
 		then
 			# Remember the event and skip
 			backlog=$line
-			[ "$DEBUG" ] && echo -n . >&2
+			[ "$LOGLEVEL" ] && echo -n . >&2
 			continue
 		fi
 
 		before=$now
 		backlog=
-		[ "$DEBUG" ] && echo >&2
+		[ "$LOGLEVEL" ] && echo >&2
 
 		line=`echo $line | tr -s " "`
 		obj=`echo $line | awk '{print $1}'`
@@ -134,17 +115,18 @@ function reconcile {
 		log=
 		log=$log"event=[$line] "
 
+		####################################
 		# Now, reconcile the state
 
-		# Get the required state from the CR's spec
+		# Get the required state from the custom resource's spec
 		# Do this better - check for myapp cr deleted event FIXME
 		spec=`kubectl get myapp $cr -o json`
 		if [ $? -eq 1 ]
 		then
-			# If the main CR is deleted kill all and quit this controller
-			pods_running=`kubectl get pod --selector=operator=$cr --no-headers --ignore-not-found |awk '{print $1}'`
-			kubectl delete pod $pods_running --wait=false 
-			echo exiting controller for $CRD_NAME/$cr ...
+			# If the main custom resource is deleted kill all objects and quit this controller
+			kubectl delete pod --selector=operator=$cr --wait=false 
+
+			echo Exiting controller for $CRD_NAME/$cr ...
 			return   # return from this fn() and the controller will stop 
 		fi	
 		
@@ -158,7 +140,7 @@ function reconcile {
 		if [ ! "$spec_replica" ] 
 		then
 			echo "EXIT spec_replica missing!!"
-			my_exit 1
+			exit_all
 		fi
 
 		# Get actual state (i.e. number of pods)
@@ -172,22 +154,22 @@ function reconcile {
 			stat_replica=0
 		fi
 
-		if [ $spec_replica -lt $stat_replica ]
+		delta=`expr $spec_replica - $stat_replica`
+
+		if [ $delta -lt 0 ]
 		then
 			# Delete pods
-			start=`expr $spec_replica - $stat_replica`
-			log=$log"Adjusting pod count by [$start]"
-			todel=`echo "$pods_running" | tail $start`
+			log=$log"Adjusting pod count by [$delta]"
+			todel=`echo "$pods_running" | tail $delta`
 			kubectl delete --wait=false pod $todel >/dev/null
-		elif [ $spec_replica -gt $stat_replica ]
+		elif [ $delta -gt 0 ]
 		then
 			# Start pods
-			start=`expr $spec_replica - $stat_replica`
-			log=$log"Adjusting pod count by [$start]"
-			while [ $start -gt 0 ]
+			log=$log"Adjusting pod count by [$delta]"
+			while [ $delta -gt 0 ]
 			do
 				kubectl run $cr-`make_random_str` --generator=run-pod/v1 --wait=false --image=$spec_image -l operator=$cr -- $spec_cmd >/dev/null
-				let start=$start-1
+				let delta=$delta-1
 			done
 			#stat_image=$spec_image
 			#stat_cmd=$spec_cmd
@@ -201,6 +183,7 @@ function reconcile {
 		#kubectl patch myapp $cr --type=json -p '[{"op": "replace", "path": "/status/replica", "value": "$stat_replica"}]'
 	
 		echo "$log"
+		#################################
 
 	done < $PIPE
 }
@@ -213,7 +196,6 @@ function run_cmd {
 	done
 }
 
-
 # Start the event watches ... pipe events into the reconcile function
 function start_controller {
 	cr=$1
@@ -225,21 +207,17 @@ function start_controller {
 		mkfifo $PIPE
 		watch_opts="--watch --no-headers --ignore-not-found"
 
-		# Create a fn to keep this command running if it fails FIXME
-		#kubectl get myapp $cr $watch_opts > $PIPE &
+		export OBJ_TYPE=myapp
 		run_cmd kubectl get myapp $cr $watch_opts > $PIPE &
 		save_pid $cr $!
 
 		sleep 0.5
 
-		# Create a fn to keep this command running if it fails FIXME
-		#kubectl get pod --selector=operator=$cr $watch_opts > $PIPE &
+		export OBJ_TYPE=pod
 		run_cmd kubectl get pod --selector=operator=$cr $watch_opts > $PIPE &
 		save_pid $cr $!
 
-		sleep 0.5
-
-		echo Starting reconcile function for Custom Resource: $CRD_NAME/$cr
+		echo Starting reconcile function for custom resource: $CRD_NAME/$cr
 		reconcile $cr   # wait here
 
 		stop_controller $cr
@@ -248,13 +226,15 @@ function start_controller {
 }
 
 function stop_controller {
-	echo Stopping pids = `get_pids $1`
+	# $1 = custom resource
+	local cr=$1
+	echo Stopping processes: `get_pids $cr`
 
-	kill `get_pids $1`
+	kill `get_pids $cr`
 	sleep 1
-	kill `get_pids $1` 2>/dev/null
+	kill `get_pids $cr` 2>/dev/null
 	sleep 2
-	kill -9 `get_pids $1` 2>/dev/null
+	kill -9 `get_pids $cr` 2>/dev/null
 
 	cleanup $cr
 }
@@ -262,26 +242,27 @@ function stop_controller {
 
 function main_manager {
 	# This function does the following
-	# - Looks for new CRs and for each new CR it starts a new controller
-	# - Looks for deleted CRs and for each deleted CR it stops the controller (which will also stop all managed objects) 
+	# - Looks for new custom resource and for each new custom resource it starts a new controller
+	# - Looks for deleted custom resources and for each deleted custom resource it stops the controller (which will also stop all managed objects) 
 
 	declare -A cr_map
+
+	local wait_time=5
 
 	while true
 	do
 		cr_list=`kubectl get $CRD_NAME --no-headers | awk '{print $1}'`
 
-		# Check for new CRs
-		for cr in `echo "$cr_list"`
+		# Check for new custom resources
+		for cr in $cr_list
 		do
 			if [ "${cr_map[$cr]}" ]
 			then
-				[ "$DEBUG" ] && echo CR $cr controller already started >&2
+				[ "$LOGLEVEL" ] && echo Controller for $CRD_NAME/$cr already started >&2
 			else
-				echo Starting controller for CR $cr >&2
+				echo Starting controller for $CRD_NAME/$cr >&2
 				start_controller $cr
 				cr_map[$cr]=1
-				[ "$DEBUG" ] && echo ${cr_map[$cr]} >&2
 				
 			fi
 		done
@@ -289,23 +270,20 @@ function main_manager {
 		# Check for deleted CRs
 		for cr in "${!cr_map[@]}"
 		do
-			[ "$DEBUG" ] && echo cr=$cr >&2
 			if ! kubectl get $CRD_NAME $cr --no-headers >/dev/null
 			then
-				echo Stopping controller for CR $cr >&2
-				sleep 8 # Give time to delete all pods
-				[ "$DEBUG" ] && echo cr=$cr >&2
-				#### stop_controller $cr &
-				sleep 2
+				echo Stopping controller for $CRD_NAME/$cr >&2
+				sleep 5 # Give time to controlleer to delete it's resources
 				unset cr_map[$cr]
 			fi
 		done
 
-		sleep 5
+		sleep $wait_time
 	done
 }
 
 # Start
+cleanup
 main_manager
 
 echo Execution should never reach here ... quitting
