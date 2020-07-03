@@ -110,13 +110,14 @@ function reconcile {
 		[ "$LOGLEVEL" ] && echo >&2
 
 		line=`echo $line | tr -s " "`
-		obj=`echo $line | awk '{print $1}'`
+		obj=`echo $line | cut -d: -f1`
+		event=`echo $line | cut -d: -f2`
 
 		log=
-		log=$log"event=[$line] "
+		log=$log"[$obj] [$event] "
 
 		####################################
-		# Now, reconcile the state
+		# Now, reconcile the state.  Pass $obj and $event 
 
 		# Get the required state from the custom resource's spec
 		# Do this better - check for myapp cr deleted event FIXME
@@ -134,7 +135,7 @@ function reconcile {
 		spec_image=`echo "$spec"   | jq -r '.spec.image'`
 		spec_cmd=`echo "$spec"     | jq -r '.spec.command'`
 
-		log=$log"spec=[$spec_replica, $spec_image, $spec_cmd] "
+		log=$log"[$spec_replica, $spec_image, $spec_cmd] "
 
 		# If this is missing, really there's a problem!
 		if [ ! "$spec_replica" ] 
@@ -159,13 +160,13 @@ function reconcile {
 		if [ $delta -lt 0 ]
 		then
 			# Delete pods
-			log=$log"Adjusting pod count by [$delta]"
+			log=$log"adjusting pod count by [$delta]"
 			todel=`echo "$pods_running" | tail $delta`
 			kubectl delete --wait=false pod $todel >/dev/null
 		elif [ $delta -gt 0 ]
 		then
 			# Start pods
-			log=$log"Adjusting pod count by [$delta]"
+			log=$log"adjusting pod count by [$delta]"
 			while [ $delta -gt 0 ]
 			do
 				kubectl run $cr-`make_random_str` --generator=run-pod/v1 --wait=false --image=$spec_image -l operator=$cr -- $spec_cmd >/dev/null
@@ -174,13 +175,14 @@ function reconcile {
 			#stat_image=$spec_image
 			#stat_cmd=$spec_cmd
 		else
-			log=$log"Nothing to do"
+			log=$log"nothing to do"
 		fi
 
 		# write the status into the cr
+		##kubectl patch myapp $cr --type=json -p '[{"op": "replace", "path": "/status", "value": {}}]'
 		#kubectl patch myapp $cr --type=json -p '[{"op": "replace", "path": "/status/image", "value": "$stat_image"}]'
 		#kubectl patch myapp $cr --type=json -p '[{"op": "replace", "path": "/status/command", "value": "$stat_cmd"}]'
-		#kubectl patch myapp $cr --type=json -p '[{"op": "replace", "path": "/status/replica", "value": "$stat_replica"}]'
+		##kubectl patch myapp $cr --type=json -p '[{"op": "replace", "path": "/status/replica", "value": "$stat_replica"}]'
 	
 		echo "$log"
 		#################################
@@ -196,6 +198,8 @@ function run_cmd {
 	done
 }
 
+function prepend { while read line; do echo "${1}:${line}"; done }
+
 # Start the event watches ... pipe events into the reconcile function
 function start_controller {
 	cr=$1
@@ -207,14 +211,12 @@ function start_controller {
 		mkfifo $PIPE
 		watch_opts="--watch --no-headers --ignore-not-found"
 
-		export OBJ_TYPE=myapp
-		run_cmd kubectl get myapp $cr $watch_opts > $PIPE &
+		run_cmd kubectl get myapp $cr $watch_opts | prepend myapp > $PIPE &
 		save_pid $cr $!
 
 		sleep 0.5
 
-		export OBJ_TYPE=pod
-		run_cmd kubectl get pod --selector=operator=$cr $watch_opts > $PIPE &
+		run_cmd kubectl get pod --selector=operator=$cr $watch_opts | prepend pod > $PIPE &
 		save_pid $cr $!
 
 		echo Starting reconcile function for custom resource: $CRD_NAME/$cr

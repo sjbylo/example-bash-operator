@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bash-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: bash-operator
+  template:
+    metadata:
+      labels:
+        name: bash-operator
+    spec:
+      serviceAccountName: bash-operator
+      containers:
+        - name: bash-operator
+          # Replace this with the built image name
+          image: quay.io/sjbylo/bash-operator
+#          command:
+#          - bash-operator
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "bash-operator"

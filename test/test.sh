@@ -33,8 +33,8 @@ function addPod {
   local i=0
   while [ $i -lt $1 ]
   do
-      #kubectl run $cr-$RANDOM --generator=run-pod/v1 --wait=false --image=busybox -l operator=$cr -- sleep 9999999 >/dev/null 2>&1
-      kubectl run $cr-$RANDOM                        --wait=false --image=busybox -l operator=$cr -- sleep 9999999 >/dev/null 2>&1
+      kubectl run $cr-$RANDOM --generator=run-pod/v1 --wait=false --image=busybox -l operator=$cr -- sleep 9999999 >/dev/null 2>&1
+      #kubectl run $cr-$RANDOM --generator=run-pod/v1 --wait=false --image=busybox -l operator=$cr --image-pull-policy=Never -- sleep 9999999 >/dev/null 2>&1
       let i=$i+1
   done
 }
@@ -51,15 +51,15 @@ while [ $i -le $rep ]
 do
   echo
   echo Starting round $i of $rep tests for myapp/$cr ...
-  log=$cr;x=`echo $(( RANDOM % 5 ))`; setReplica $x; sleep 10;checkReplica $x && log="$log PASS" || stop; echo $log
-  log=$cr;x=`echo $(( RANDOM % 5 ))`; setReplica $x; sleep 10;checkReplica $x && log="$log PASS" || stop; echo $log
-  log=$cr;y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep 10;checkReplica $x && log="$log PASS" || stop; echo $log
-  log=$cr;y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep 10;checkReplica $x && log="$log PASS" || stop; echo $log
-  log=$cr;y=`echo $(( RANDOM % 3+1))`;addPod $y;     sleep 10;checkReplica $x && log="$log PASS" || stop; echo $log
-  log=$cr;x=`echo $(( RANDOM % 5 ))`; setReplica $x; sleep 10;checkReplica $x && log="$log PASS" || stop; echo $log
-  log=$cr;y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep 10;checkReplica $x && log="$log PASS" || stop; echo $log
-  log=$cr;y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep 10;checkReplica $x && log="$log PASS" || stop; echo $log
-  log=$cr;x=`echo $(( RANDOM % 10))`; setReplica $x; sleep 10;checkReplica $x && log="$log PASS" || stop; echo $log
+  log=$cr;x=`echo $(( RANDOM % 5 ))`; setReplica $x; sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
+  log=$cr;x=`echo $(( RANDOM % 5 ))`; setReplica $x; sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
+  log=$cr;y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
+  log=$cr;y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
+  log=$cr;y=`echo $(( RANDOM % 3+1))`;addPod $y;     sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
+  log=$cr;x=`echo $(( RANDOM % 5 ))`; setReplica $x; sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
+  log=$cr;y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
+  log=$cr;y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
+  log=$cr;x=`echo $(( RANDOM % 10))`; setReplica $x; sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
   let i=$i+1
   echo
 done

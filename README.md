@@ -31,13 +31,21 @@ Now, decide to run the Operator either on a Linux machine or in Kubernetes.
 
 ## Start the Operator in Kubernetes
 
-To allow the Operator to access the Kubernetes API, this is one quick way of allowing it on OpenShift:
+To allow the Operator to access the Kubernetes API, use the manefests in the deploy directory:
 
 ```
-oc policy add-role-to-user cluster-admin -z default
+kubectl create -f deploy/service_account.yaml
+kubectl create -f deploy/role.yaml
+kubectl create -f deploy/role_binding.yaml
 ```
 
-Launch the Operator:
+Launch the Operator as a deployment:
+
+```
+kubectl create -f deploy/operator.yaml
+```
+
+... or launch the Operator as a pod:
 
 ```
 kubectl run bash-operator --generator=run-pod/v1 --image=quay.io/sjbylo/bash-operator:latest
