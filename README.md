@@ -1,10 +1,8 @@
 # Example Kubernetes Operator in bash
 
-This simple Operator is written entirely in bash and shows how to create an Operator to manage a set of pods, similar to the way a typical Kubernetes replica-set works.  It always ensures that the expected number of pods are running.
+This simple Operator is written entirely in bash and shows how to create an Operator to manage a set of pods.  It works in a similar to the way a typical Kubernetes replica-set works, it always ensures that the specified number of pods are running.
 
-# Testing the Operator
-
-The Operator can be tested by running it directly on a Linux machine or in a pod.  It has been tested on RHEL 7.5 and Fedora 32 and on Minishift and Kubernetes 1.17 (OpenShift 4.4)
+# Getting started
 
 First, create a namespace and switch to it:
 
@@ -12,6 +10,27 @@ First, create a namespace and switch to it:
 kubectl create namespace operator-test
 kubectl config set-context --current --namespace=operator-test
 ```
+
+## Test the Operator using the provided scripts
+
+The quick way to test this is to run the following commands in seperate terminals:
+
+```
+test/runall.sh 1            # run one itteration of the tests from quay.io/sjbylo/bash-operator:latest
+test/runall.sh 2 latest     # run all tests for two custom resources in parrallel from quay.io/sjbylo/bash-operator:dev 
+```
+(See the runall.sh file for more options) 
+
+## View what's happening in a seperate terminal
+
+```
+watch kubectl get pods
+```
+
+# Testing the Operator
+
+The Operator can be tested by running it directly on a Linux machine or on Kubernetes.  It has been tested on the following: RHEL 7.5, Fedora 32, Minikube, Kubernetes 1.17 and OpenShift 4.4.
+
 
 As cluster-admin, create the Custom Resource Definition (CRD) and an example Custom Resource (CR):
 
