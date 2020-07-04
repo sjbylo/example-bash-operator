@@ -28,11 +28,13 @@ test/runall.sh 1            # run tests on one CR using image quay.io/sjbylo/bas
 ```
 (See the runall.sh file for more options) 
 
-View what's happening in a separate terminal:
+In a separate terminal run this command, view what's happening:
 
 ```
 watch -n1 kubectl get pods
 ```
+
+To stop the above commands, hit Ctrl-C. 
 
 Optionally, view the logs of the Operator.
 
@@ -66,11 +68,10 @@ kubectl create -f deploy/role.yaml
 kubectl create -f deploy/role_binding.yaml
 ```
 
-kubectl create -f deploy/service_account.yaml
-
-Launch the Operator as a deployment:
+As a normal user (as with cluster-admin permissions), launch the Operator as a deployment:
 
 ```
+kubectl create -f deploy/service_account.yaml
 kubectl create -f deploy/operator.yaml
 ```
 
@@ -83,13 +84,19 @@ kubectl run bash-operator --generator=run-pod/v1 --image=quay.io/sjbylo/bash-ope
 View the Operator output:
 
 ```
-while true; do kubectl logs bash-operator -f; sleep 1; done
+kubectl logs bash-operator -f
 ```
 
 Stop the Operator:
 
 ```
 kubectl delete po bash-operator
+```
+
+or
+
+```
+kubectl delete deployment bash-operator
 ```
 
 
@@ -108,6 +115,7 @@ A cleanup script can be used to remove any background processes that might get l
 ```
 test/cleanup.sh
 ```
+
 
 ### Local testing on a Linux machine
 
