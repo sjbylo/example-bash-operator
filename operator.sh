@@ -280,7 +280,7 @@ function main_manager {
 			fi
 		done
 
-		sleep $wait_time
+		[ "${!cr_map[@]}" ] && sleep $wait_time || sleep 1
 	done
 }
 

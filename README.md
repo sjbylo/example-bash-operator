@@ -39,6 +39,13 @@ To stop the above commands, hit Ctrl-C.
 Optionally, view the logs of the Operator.
 
 
+Stop all tests and clean up all objects:
+
+```
+test/stopall.sh
+```
+
+
 ### Testing the Operator, step by step
 
 With cluster-admin permissions, create the Custom Resource Definition (CRD).
@@ -151,7 +158,7 @@ Note that, for local testing purposes, the operator.sh script will not work on M
 
 The following commands are useful to follow the progress during testing.  Run them in a separate terminal. 
 
-This command shows the pods that are running and the watch commands:
+This command shows the pods that are running and the watch commands, used by the Operator:
 
 ```
 cr=myapp1  # Set the name of your Custom Resource

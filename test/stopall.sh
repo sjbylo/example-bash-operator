@@ -1,13 +1,19 @@
 #!/bin/bash
 # Remove all CRD, CRs and operator
 
-# Refresh the CRD 
-kubectl delete -f $dir/crd-myapp.yaml 2>/dev/null
-
 # Delete any CRs
 kubectl delete myapp --all --wait=false
 
-# Restart the operator
-kubectl get pod bash-operator 2>/dev/null && \
-	kubectl delete pod bash-operator --now=true # --grace-period=0 --force 
+sleep 2
+
+# Remove service account, role and binding
+kubectl delete -f deploy/service_account.yaml
+kubectl delete -f deploy/role.yaml
+kubectl delete -f deploy/role_binding.yaml
+
+# Delete the operator
+kubectl delete -f deploy/operator.yaml
+
+# Refresh the CRD 
+kubectl delete -f test/crd-myapp.yaml
 

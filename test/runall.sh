@@ -27,10 +27,11 @@ function stop_all() {
 	exit 
 }
 
+
 # Set up
-kubectl replace -f deploy/service_account.yaml
-kubectl replace -f deploy/role.yaml
-kubectl replace -f deploy/role_binding.yaml
+kubectl create -f deploy/service_account.yaml
+kubectl create -f deploy/role.yaml
+kubectl create -f deploy/role_binding.yaml
 
 # Refresh the CRD 
 kubectl delete -f $dir/crd-myapp.yaml 2>/dev/null
@@ -40,7 +41,9 @@ kubectl create -f $dir/crd-myapp.yaml
 kubectl delete myapp --all --wait=false
 
 # Create the deployment 
-kubectl replace -f deploy/operator.yaml
+kubectl delete -f deploy/operator.yaml 2>/dev/null
+kubectl create -f deploy/operator.yaml 
+#kubectl rollout restart deployment/bash-operator 
 
 # Restart the operator
 #kubectl get pod bash-operator 2>/dev/null && \
@@ -52,9 +55,7 @@ kubectl replace -f deploy/operator.yaml
 	#--image-pull-policy=Always --image=quay.io/sjbylo/bash-operator:$tag || exit 1
 	#--image-pull-policy=Never --image=quay.io/sjbylo/bash-operator:$tag || exit 1
 
-kubectl rollout restart deployment/bash-operator 
-
-sleep 0.5
+sleep 1
 
 echo -n "Waiting for operator to start ... "
 while ! kubectl get pod | grep -q "bash-operator.*\bRunning\b" 
@@ -63,12 +64,13 @@ do
 done
 echo running
 
+sleep 1
+
 i=1
 while [ $i -le $cnt ]
 do
-	#cat $dir/cr-myapp1.yaml | sed "s/myapp1/myapp$i/" | oc delete -f -
 	cat $dir/cr-myapp1.yaml | sed "s/myapp1/myapp$i/" | oc create -f -
-	$dir/test.sh myapp$i 3 10 &   # If the cluster is slow, increase 12s to wait longer for test results
+	$dir/test.sh myapp$i 3 15 &   # If the cluster is slow, increase 12s to wait longer for test results
 	let i=$i+1
 done
 

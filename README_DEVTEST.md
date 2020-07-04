@@ -30,4 +30,10 @@ kubectl create -f test/cr-myapp1.yaml
 test/test.sh myapp1
 ```
 
+View the Operator's log:
+
+```
+while true; do kubectl logs $(kubectl get po --no-headers | grep bash-op | grep -e Running | awk '{print $1}') -f 2>/dev/null; sleep 1; echo; done
+```
+
 
