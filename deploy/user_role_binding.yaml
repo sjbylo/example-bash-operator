@@ -1,0 +1,14 @@
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: access-myapp
+  namespace: testy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: access-myapp
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: user0
+
