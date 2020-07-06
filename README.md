@@ -45,6 +45,12 @@ Stop all tests and clean up all objects:
 test/stopall.sh
 ```
 
+Stop the Operator:
+
+```
+kubectl delete deployment bash-operator
+```
+
 
 ### Testing the Operator, step by step
 
@@ -99,12 +105,6 @@ Now, as a normal user, you can create a CR in the same way, as above.
 
 ```
 kubectl create -f test/cr-myapp2.yaml	 
-```
-
-Stop the Operator:
-
-```
-kubectl delete deployment bash-operator
 ```
 
 ### Manual testing
