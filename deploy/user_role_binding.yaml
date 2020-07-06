@@ -2,7 +2,6 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: access-myapp
-  namespace: testy
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -10,5 +9,5 @@ roleRef:
 subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
-  name: user0
+  name: user0   # Change the user name here
 

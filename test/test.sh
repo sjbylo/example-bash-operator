@@ -51,15 +51,15 @@ while [ $i -le $rep ]
 do
   echo
   echo Starting round $i of $rep tests for myapp/$cr ...
-  log=$cr;x=`echo $(( RANDOM % 3 ))`; setReplica $x; sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
-  log=$cr;x=`echo $(( RANDOM % 3 ))`; setReplica $x; sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
-  log=$cr;y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
-  log=$cr;y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
-  log=$cr;y=`echo $(( RANDOM % 3+1))`;addPod $y;     sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
-  log=$cr;x=`echo $(( RANDOM % 4 ))`; setReplica $x; sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
-  log=$cr;y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
-  log=$cr;y=`echo $(( RANDOM % 3+1))`;delPod $y;     sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
-  log=$cr;x=`echo $(( RANDOM % 4))`; setReplica $x; sleep $w;checkReplica $x && log="$log PASS" || stop; echo $log
+  log=$cr;r=`echo $(( RANDOM % 3  ))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;r=`echo $(( RANDOM % 3+1))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;p=`echo $(( RANDOM % 3+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;p=`echo $(( RANDOM % 3+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;p=`echo $(( RANDOM % 3+1))`;addPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;r=`echo $(( RANDOM % 4+1))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;p=`echo $(( RANDOM % 3+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;p=`echo $(( RANDOM % 3+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;r=`echo $(( RANDOM % 4  ))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
   let i=$i+1
   echo
 done

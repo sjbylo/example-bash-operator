@@ -1,7 +1,0 @@
-apiVersion: stable.example.com/v1
-kind: MyApp
-metadata:
-  name: example-myapp
-spec:
-  # Add fields here
-  size: 3
