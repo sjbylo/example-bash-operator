@@ -275,7 +275,7 @@ function main_manager {
 			if ! kubectl get $CRD_NAME $cr --no-headers >/dev/null
 			then
 				echo Stopping controller for $CRD_NAME/$cr >&2
-				sleep 5 # Give time to controlleer to delete it's resources
+				sleep 5 # Give time to controller to delete it's resources
 				unset cr_map[$cr]
 			fi
 		done
