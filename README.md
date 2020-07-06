@@ -24,7 +24,7 @@ oc new-project operator-test
 The quick way to test this is to run the following commands in separate terminals with cluster-admin permissions. This will set up the CRD and the CRs, roles and permissions, launch the Operator and run the tests. 
 
 ```
-test/runall.sh 1            # run tests on one CR using image quay.io/sjbylo/bash-operator:latest
+test/runall.sh 1            # run tests on one CR 
 ```
 (See the runall.sh file for more options) 
 
@@ -75,7 +75,7 @@ kubectl create -f deploy/role.yaml
 kubectl create -f deploy/role_binding.yaml
 ```
 
-As a normal user (as with cluster-admin permissions), launch the Operator as a deployment:
+As a normal user (or with cluster-admin permissions), launch the Operator as a deployment:
 
 ```
 kubectl create -f deploy/service_account.yaml
