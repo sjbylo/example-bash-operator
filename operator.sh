@@ -8,7 +8,10 @@ type gtr 2>/dev/null >&2 && TR_CMD=gtr || TR_CMD=tr
 [ "$LOGLEVEL" = "2" ] && set -x
 [ "$LOGLEVEL" ] || LOGLEVEL=0
 
-#echo LOGLEVEL=$LOGLEVEL
+INTERVAL_MS=${INTERVAL_MS-5000}        # time to wait in ms before making changes to pods
+
+echo LOGLEVEL=$LOGLEVEL
+echo INTERVAL_MS=$INTERVAL_MS
 
 # Set the name of the CRD
 CRD_NAME=myapp 
@@ -126,7 +129,6 @@ function reconcile {
 
 	local before=`$DATE_CMD +%s%3N`
 	local PIPE=$tempfile.$cr.pipe
-	local INTERVAL_MS=3000        # time to wait in ms before making changes to pods
 
 	getRunningPods $cr
 	[ $LOGLEVEL -ge 1 ] && echo "Debug: state_pods=[${!state_pods[@]}]" >&2
@@ -173,18 +175,18 @@ function reconcile {
 					if [ "$pod_state" = "Terminating" -o "$pod_state" = "Completed" ]
 					then
 						unset state_pods["$pod_name"]
-						( sleep 5; echo "cleanup:no event" >> $PIPE ) & 
+						#( sleep 5; echo "cleanup:no event" >> $PIPE ) &   # FIXME
 					fi
 				fi
 				[ $LOGLEVEL -ge 1 ] && echo "Debug: state_pods=[${!state_pods[@]}]" >&2
 			elif [ "$obj" = "myapp" ]; then
 				# Retrieve the CR spec.  If CR object deleted, delete all managed objects
 				if ! getSpec $cr; then
-					kubectl delete pod --selector=operator=$cr --grace-period=1 --wait=false >/dev/null
+					kubectl delete pod --selector=operator=$cr --now --wait=false >/dev/null
 					return 0
 				fi
 			elif [ "$obj" = "cleanup" ]; then
-				kubectl delete pod --selector=operator=$cr --grace-period=1 --wait=false --field-selector status.phase=Succeeded >/dev/null 
+				kubectl delete pod --selector=operator=$cr --now --wait=false --field-selector status.phase=Succeeded >/dev/null 
 			else
 				[ $LOGLEVEL -ge 1 ] && echo "WARNING: Unknown object type [$obj]" >&2
 				return 
@@ -218,7 +220,7 @@ function reconcile {
 			[ $LOGLEVEL -ge 1 ] && echo "state_pods=[${!state_pods[@]}]" >&2
 
 			# Remove all the related pods ...
-			kubectl delete pods --selector=operator=$cr --grace-period=1 --wait=false >/dev/null
+			kubectl delete pods --selector=operator=$cr --now --wait=false >/dev/null
 
 			# Clear the running pod map
 			if [ ${#state_pods[@]} -gt 0 ]; then
@@ -235,7 +237,7 @@ function reconcile {
 		fi
 
 		# Every x-th time, refresh running pods state and reset the map?
-		[ $counter -gt 4 ] && getRunningPods $cr && counter=0
+		# FIXME [ $counter -gt 4 ] && getRunningPods $cr && counter=0
 
 		state_replica=${#state_pods[@]}
 
@@ -251,7 +253,7 @@ function reconcile {
 			todel=`echo "$running_pods" | tail $delta`
 			if [ "$todel" ]
 			then
-				kubectl delete pods $todel --grace-period=1 --wait=false >/dev/null
+				kubectl delete pods $todel --now --wait=false >/dev/null
 			fi
 		elif [ $delta -gt 0 ]
 		then
@@ -385,4 +387,6 @@ main_manager
 
 echo Execution should never reach here ... quitting
 exit 1
+
+
 

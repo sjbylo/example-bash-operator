@@ -29,3 +29,7 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "bash-operator"
+            - name: INTERVAL_MS
+              value: "4000"
+            - name: LOGLEVEL
+              value: "0"

@@ -35,16 +35,15 @@ kubectl create -f deploy/role.yaml
 kubectl create -f deploy/role_binding.yaml
 
 # Refresh the CRD 
-kubectl delete -f $dir/crd-myapp.yaml 2>/dev/null
+#kubectl delete -f $dir/crd-myapp.yaml 2>/dev/null
 kubectl create -f $dir/crd-myapp.yaml
 
 # Delete any CRs
 kubectl delete myapp --all --wait=false
 
 # Create the deployment 
-kubectl delete -f deploy/operator.yaml 2>/dev/null
-sed "s/:latest/:$tag/" deploy/operator.yaml | kubectl create -f -
-#kubectl rollout restart deployment/bash-operator 
+###sed "s/:latest/:$tag/" deploy/operator.yaml | kubectl create -f -
+#kubectl set env deployment/bash-operator INTERVAL_MS=6000
 #kubectl set env deployment/bash-operator LOGLEVEL=$loglevel
 
 # Restart the operator
@@ -52,9 +51,9 @@ sed "s/:latest/:$tag/" deploy/operator.yaml | kubectl create -f -
 #	kubectl delete pod bash-operator --grace-period=5 # --force 
 	#kubectl delete pod bash-operator --now=true --wait=false # --grace-period=0 --force 
 
-#echo Starting operator from quay.io/sjbylo/bash-operator:$tag ...
-#kubectl run bash-operator --env=LOGLEVEL=$loglevel --generator=run-pod/v1 \
-	#--image-pull-policy=Always --image=quay.io/sjbylo/bash-operator:$tag || exit 1
+echo Starting operator from quay.io/sjbylo/bash-operator:$tag ...
+kubectl run bash-operator --env=LOGLEVEL=$loglevel --env=INTERVAL_MS=6000 --generator=run-pod/v1 \
+	--image-pull-policy=Always --image=quay.io/sjbylo/bash-operator:$tag || exit 1
 	#--image-pull-policy=Never --image=quay.io/sjbylo/bash-operator:$tag || exit 1
 
 sleep 1
