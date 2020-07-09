@@ -17,3 +17,5 @@ kubectl delete -f deploy/operator.yaml
 # Refresh the CRD 
 kubectl delete -f test/crd-myapp.yaml
 
+# Delete other pods
+kubectl delete pods --all --grace-period=1

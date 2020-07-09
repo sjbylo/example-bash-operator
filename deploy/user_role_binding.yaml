@@ -8,6 +8,8 @@ roleRef:
   name: access-myapp
 subjects:
 - apiGroup: rbac.authorization.k8s.io
-  kind: User
-  name: user0   # Change the user name here
+  kind: Group
+  name: system:authenticated
+  #kind: User
+  #name: user0   # Change the user name here
 

@@ -3,7 +3,8 @@
 
 cnt=${1-3} 	# number of concurrent tests, default ia 3
 tag=${2-latest}	# which image tag? dev or latest
-d=${3-}		# debug output of operator or not (default is info, 1 is some 2 is full)
+wait_time=${3-15}  # wait time for each test
+loglevel=${4-}	# debug output of operator or not (default is info, 1 is some 2 is full)
 
 dir=`dirname $0`
 
@@ -42,8 +43,9 @@ kubectl delete myapp --all --wait=false
 
 # Create the deployment 
 kubectl delete -f deploy/operator.yaml 2>/dev/null
-kubectl create -f deploy/operator.yaml 
+sed "s/:latest/:$tag/" deploy/operator.yaml | kubectl create -f -
 #kubectl rollout restart deployment/bash-operator 
+#kubectl set env deployment/bash-operator LOGLEVEL=$loglevel
 
 # Restart the operator
 #kubectl get pod bash-operator 2>/dev/null && \
@@ -51,7 +53,7 @@ kubectl create -f deploy/operator.yaml
 	#kubectl delete pod bash-operator --now=true --wait=false # --grace-period=0 --force 
 
 #echo Starting operator from quay.io/sjbylo/bash-operator:$tag ...
-#kubectl run bash-operator --env=LOGLEVEL=$d --generator=run-pod/v1 \
+#kubectl run bash-operator --env=LOGLEVEL=$loglevel --generator=run-pod/v1 \
 	#--image-pull-policy=Always --image=quay.io/sjbylo/bash-operator:$tag || exit 1
 	#--image-pull-policy=Never --image=quay.io/sjbylo/bash-operator:$tag || exit 1
 
@@ -70,7 +72,7 @@ i=1
 while [ $i -le $cnt ]
 do
 	cat $dir/cr-myapp1.yaml | sed "s/myapp1/myapp$i/" | oc create -f -
-	$dir/test.sh myapp$i 3 15 &   # If the cluster is slow, increase 12s to wait longer for test results
+	$dir/test.sh myapp$i 999 $wait_time &   # If the cluster is slow, increase 12s to wait longer for test results
 	let i=$i+1
 done
 

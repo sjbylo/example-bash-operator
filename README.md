@@ -183,6 +183,7 @@ The Operator can be tested by running it directly on a Linux machine or on Kuber
 
 Note that, for local testing purposes, the operator.sh script will not work on Mac OS (Darwin) as some of the commands in Mac OS work in different ways. 
 
+The Operator requires bash version 4 or above because it makes use of associative arrays.
 
 ## Miscellaneous
 

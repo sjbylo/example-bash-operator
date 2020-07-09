@@ -7,8 +7,8 @@ then
 	rep=${2-99999}	# number of test rounds, default is continious
 	w=${3-15}	# time to wait for each test succeed or fail
 else
-       echo "Usage `basename $0` <cr object name>"
-       echo "Example: `basename $0` myapp1"
+       echo "Usage `basename $0` <cr object name> <repetitions> <wait time>"
+       echo "Example: `basename $0` myapp1 1 10"
        exit 1
 fi
 
@@ -28,15 +28,29 @@ function delPod {
     xargs kubectl delete po --wait=false >/dev/null 2>/dev/null
 }
 
+theImage=busybox
+
 function addPod {
   log="$log:adding $1 pod(s) "
   local i=0
   while [ $i -lt $1 ]
   do
-      kubectl run $cr-$RANDOM --generator=run-pod/v1 --wait=false --image=busybox -l operator=$cr -- sleep 9999999 >/dev/null 2>&1
-      #kubectl run $cr-$RANDOM --generator=run-pod/v1 --wait=false --image=busybox -l operator=$cr --image-pull-policy=Never -- sleep 9999999 >/dev/null 2>&1
+      kubectl run $cr-$RANDOM --generator=run-pod/v1 --wait=false --restart=Never --image=$theImage -l operator=$cr -- sleep 99999999 >/dev/null 2>&1
+      #kubectl run $cr-$RANDOM --generator=run-pod/v1 --wait=false --restart=Never --image=$theImage -l operator=$cr --image-pull-policy=Never -- sleep 99999999 >/dev/null 2>&1
       let i=$i+1
   done
+}
+
+function toggleImage {
+	if [ "$theImage" = "busybox" ]
+	then
+		kubectl patch myapp myapp1 --type=json -p '[{"op": "replace", "path": "/spec/image", "value": "docker/whalesay"}]' >/dev/null
+		theImage=docker/whalesay
+	else
+		kubectl patch myapp myapp1 --type=json -p '[{"op": "replace", "path": "/spec/image", "value": "busybox"}]' >/dev/null
+		theImage=busybox
+	fi
+	log="$log:switching image to $theImage "
 }
 
 function stop {
@@ -46,20 +60,21 @@ function stop {
 
 #set -x 
 
+echo Wait time is ${w}s for myapp/$cr ...
+
 i=1
 while [ $i -le $rep ]
 do
   echo
   echo Starting round $i of $rep tests for myapp/$cr ...
-  log=$cr;r=`echo $(( RANDOM % 3  ))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
   log=$cr;r=`echo $(( RANDOM % 3+1))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
-  log=$cr;p=`echo $(( RANDOM % 3+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
-  log=$cr;p=`echo $(( RANDOM % 3+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
-  log=$cr;p=`echo $(( RANDOM % 3+1))`;addPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
-  log=$cr;r=`echo $(( RANDOM % 4+1))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
-  log=$cr;p=`echo $(( RANDOM % 3+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
-  log=$cr;p=`echo $(( RANDOM % 3+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
-  log=$cr;r=`echo $(( RANDOM % 4  ))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;p=`echo $(( RANDOM % 1+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;p=`echo $(( RANDOM % 2+1))`;addPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;r=`echo $(( RANDOM % 3+1))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;p=`echo $(( RANDOM % 1+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;p=`echo $(( RANDOM % 1+1))`;toggleImage;   sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;p=`echo $(( RANDOM % 1+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;r=`echo $(( RANDOM % 3  ))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
   let i=$i+1
   echo
 done
