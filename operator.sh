@@ -107,7 +107,15 @@ function timeUp {
 }
 
 # Set the global running pod state map
-declare -A state_pods
+#declare -A state_pods
+
+function getPodCount {
+	local cr=$1
+
+	running_pod_count=`kubectl get pod --selector=operator=$cr --ignore-not-found | \
+		grep -e "\bRunning\b" -e "\bPending\b" -e "\bContainerCreating\b"| \
+		wc -l | tr -d " "`
+}
 
 function getRunningPods {
 	local cr=$1
@@ -118,12 +126,12 @@ function getRunningPods {
 	###running_pods_cnt=`echo "$running_pods" | wc -l` # needed?
 
 	# refresh the running pod state map
-	for i in ${!state_pods[@]}; do   # empty the map
-		unset state_pods[$i]
-	done
-	for i in $running_pods; do	# fill the map with actual state
-		state_pods[$i]=1
-	done
+#	for i in ${!state_pods[@]}; do   # empty the map
+#		unset state_pods[$i]
+#	done
+#	for i in $running_pods; do	# fill the map with actual state
+#		state_pods[$i]=1
+#	done
 }
 
 function reconcile {
@@ -132,8 +140,7 @@ function reconcile {
 	local before=`$DATE_CMD +%s%3N`
 	local PIPE=$tempfile.$cr.pipe
 
-	getRunningPods $cr
-	[ $LOGLEVEL -ge 1 ] && echo "Debug: state_pods=[${!state_pods[@]}]" >&2
+#	getRunningPods $cr
 
 	getSpec $cr  # Fetch the initial spec from the CR object
 
@@ -141,10 +148,12 @@ function reconcile {
 
 	kubectl patch myapp $cr --type=json -p '[{"op": "replace", "path": "/status", "value": {}}]' >/dev/null
 
-	local counter=0
+	#local counter=0
+
+	getPodCount $cr
 
 	state_image=busybox
-	state_cmd="sleep 99999999"
+	state_cmd="sleep 99999"
 
 	# Loop through all the events from the watched objects.  Suppress events if they come too fast (within 3 seconds)
 	while true
@@ -164,24 +173,7 @@ function reconcile {
 		# If read not a timeout 
 		if [ $ret -ne 142 ]
 		then
-			if [ "$obj" = "pod" ]; then
-				# Remember the state of the pod
-				pod_name=`echo $event | awk '{print $1}'`
-				pod_state=`echo $event | awk '{print $3}'`
-				[ $LOGLEVEL -ge 1 ] && echo "Debug: pod_state=[$pod_state]" >&2
-				[ $LOGLEVEL -ge 1 ] && echo "Debug: pod_name=[$pod_name]" >&2
-				[ $LOGLEVEL -ge 1 ] && echo "Debug: state_pods=[${!state_pods[@]}]" >&2
-				if echo $pod_state | grep -x -q -e "Running" -e "Pending" -e "ContainerCreating"; then
-					state_pods["$pod_name"]=1
-				else
-					if [ "$pod_state" = "Terminating" -o "$pod_state" = "Completed" ]
-					then
-						unset state_pods["$pod_name"]
-						#( sleep 5; echo "cleanup:no event" >> $PIPE ) &   # FIXME
-					fi
-				fi
-				[ $LOGLEVEL -ge 1 ] && echo "Debug: state_pods=[${!state_pods[@]}]" >&2
-			elif [ "$obj" = "myapp" ]; then
+			if [ "$obj" = "myapp" ]; then
 				# Retrieve the CR spec.  If CR object deleted, delete all managed objects
 				if ! getSpec $cr; then
 					kubectl delete pod --selector=operator=$cr --now --wait=false >/dev/null
@@ -203,10 +195,9 @@ function reconcile {
 
 		[ ! "$spec_image" -o ! "$spec_replica" -o ! "$spec_cmd" ] && echo "WARNING: spec missing [$spec_image $spec_replica $spec_cmd]" >&2
 
-		log="$cr `printf "%2s\n" $event_cnt` events. ${#state_pods[@]}/$spec_replica running. " 
-		event_cnt=0
+		#log="$cr `printf "%2s\n" $event_cnt` events. ${#state_pods[@]}/$spec_replica running. " 
 
-		#log=$log"[$obj] [$event] "
+		log="$cr $running_pod_count/$spec_replica running. " 
 
 		####################################
 		# Now, reconcile the state.
@@ -216,21 +207,23 @@ function reconcile {
 			log=$log"Image or command change, replacing all pods ..."
 			echo "$log"
 
+LOGLEVEL=1
 			[ $LOGLEVEL -ge 1 ] && echo "Replacing all pods ..." >&2
 			[ $LOGLEVEL -ge 1 ] && echo "state_image=[$state_image] spec_image=[$spec_image]" >&2
 			[ $LOGLEVEL -ge 1 ] && echo "state_cmd=[$state_cmd] spec_cmd=[$spec_cmd]" >&2
-			[ $LOGLEVEL -ge 1 ] && echo "state_pods=[${!state_pods[@]}]" >&2
+			#[ $LOGLEVEL -ge 1 ] && echo "state_pods=[${!state_pods[@]}]" >&2
+LOGLEVEL=0
 
 			# Remove all the related pods ...
 			kubectl delete pods --selector=operator=$cr --now --wait=false >/dev/null
 
 			# Clear the running pod map
-			if [ ${#state_pods[@]} -gt 0 ]; then
-				for i in ${!state_pods[@]}
-				do
-					unset state_pods[$i]
-				done
-			fi
+			#if [ ${#state_pods[@]} -gt 0 ]; then
+				#for i in ${!state_pods[@]}
+				#do
+					#unset state_pods[$i]
+				#done
+			#fi
 
 			state_image=$spec_image
 			state_cmd=$spec_cmd
@@ -240,8 +233,11 @@ function reconcile {
 
 		# Every x-th time, refresh running pods state and reset the map?
 		# FIXME [ $counter -gt 4 ] && getRunningPods $cr && counter=0
+		getPodCount $cr
 
-		state_replica=${#state_pods[@]}
+		state_replica=$running_pod_count
+
+		log="$cr $running_pod_count/$spec_replica running. " 
 
 		delta=`expr $spec_replica - $state_replica`
 
@@ -250,7 +246,7 @@ function reconcile {
 			# Delete pods
 			log=$log"Replica mismatch, adjusting pod count by $delta"
 
-			getRunningPods $cr && counter=0
+			getRunningPods $cr 
 
 			todel=`echo "$running_pods" | tail $delta`
 			if [ "$todel" ]
@@ -279,7 +275,7 @@ function reconcile {
 		#kubectl patch myapp $cr --type=json -p '[{"op": "replace", "path": "/status/command", "value": "$state_cmd"}]'
 		kubectl patch myapp $cr --type=json -p '[{"op": "replace", "path": "/status/replica", "value": '$state_replica'}]' >/dev/null
 
-		let counter=$counter+1
+		#let counter=$counter+1
 
 		echo "$log"
 	done < $PIPE
@@ -309,10 +305,10 @@ function start_controller {
 		run_cmd kubectl get myapp $cr $watch_opts | prepend myapp > $PIPE &
 		save_pid $cr $!
 
-		sleep 0.5
-
-		run_cmd kubectl get pod --selector=operator=$cr $watch_opts | prepend pod > $PIPE &
-		save_pid $cr $!
+		#sleep 0.5
+		#
+		#run_cmd kubectl get pod --selector=operator=$cr $watch_opts | prepend pod > $PIPE &
+		#save_pid $cr $!
 
 		echo Starting reconcile function for custom resource: $CRD_NAME/$cr
 		reconcile $cr   # wait here

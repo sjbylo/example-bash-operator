@@ -68,13 +68,13 @@ do
   echo
   echo Starting round $i of $rep tests for myapp/$cr ...
   log=$cr;r=`echo $(( RANDOM % 3+1))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
-  log=$cr;p=`echo $(( RANDOM % 1+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
-  log=$cr;p=`echo $(( RANDOM % 2+1))`;addPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
-  log=$cr;r=`echo $(( RANDOM % 3+1))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
-  log=$cr;p=`echo $(( RANDOM % 1+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;p=`echo $(( RANDOM % 2+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;p=`echo $(( RANDOM % 3+1))`;addPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;r=`echo $(( RANDOM % 4+1))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;p=`echo $(( RANDOM % 2+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
   log=$cr;p=`echo $(( RANDOM % 1+1))`;toggleImage;   sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
   log=$cr;p=`echo $(( RANDOM % 1+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
-  log=$cr;r=`echo $(( RANDOM % 3  ))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;r=`echo $(( RANDOM % 6  ))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
   let i=$i+1
   echo
 done
