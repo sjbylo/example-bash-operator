@@ -2,6 +2,8 @@
 #!/usr/local/bin/bash 
 # MyApp Operator
 
+# THIS VERSION IS NOT WORKING
+
 type gdate 2>/dev/null >&2 && DATE_CMD=gdate || DATE_CMD=date
 type gtr 2>/dev/null >&2 && TR_CMD=gtr || TR_CMD=tr
 
