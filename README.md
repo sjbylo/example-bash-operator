@@ -24,9 +24,9 @@ oc new-project operator-test
 The quick way to test this is to run the following commands in separate terminals with cluster-admin permissions. This will set up the CRD and the CRs, roles and permissions, launch the Operator and run the tests. 
 
 ```
-test/runall.sh 1            # run tests on one CR 
+test/startall.sh 1            # run tests on one CR 
 ```
-(Open the runall.sh file for more options) 
+(Open the startall.sh file for more options) 
 
 In a separate terminal run this command to view what's happening:
 

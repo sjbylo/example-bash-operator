@@ -51,10 +51,13 @@ kubectl delete myapp --all --wait=false
 #	kubectl delete pod bash-operator --grace-period=5 # --force 
 	#kubectl delete pod bash-operator --now=true --wait=false # --grace-period=0 --force 
 
+kubectl delete pod bash-operator --now
+
 echo Starting operator from quay.io/sjbylo/bash-operator:$tag ...
-kubectl run bash-operator --env=LOGLEVEL=$loglevel --env=INTERVAL_MS=6000 --generator=run-pod/v1 \
-	--image-pull-policy=Always --image=quay.io/sjbylo/bash-operator:$tag || exit 1
-	#--image-pull-policy=Never --image=quay.io/sjbylo/bash-operator:$tag || exit 1
+#kubectl run bash-operator --env=LOGLEVEL=$loglevel --env=INTERVAL_MS=6000 --generator=run-pod/v1 \
+kubectl run bash-operator --env=LOGLEVEL=$loglevel --generator=run-pod/v1  --serviceaccount=bash-operator \
+        --image-pull-policy=Always --image=quay.io/sjbylo/bash-operator:$tag || exit 1
+        #--image-pull-policy=Never --image=quay.io/sjbylo/bash-operator:$tag || exit 1
 
 sleep 1
 
