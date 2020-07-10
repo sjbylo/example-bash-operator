@@ -10,7 +10,7 @@ type gtr 2>/dev/null >&2 && TR_CMD=gtr || TR_CMD=tr
 [ "$LOGLEVEL" = "2" ] && set -x
 [ "$LOGLEVEL" ] || LOGLEVEL=0
 
-INTERVAL_MS=${INTERVAL_MS-5000}        # time to wait in ms before making changes to pods
+INTERVAL_MS=${INTERVAL_MS-3000}        # time to wait in ms before making changes to pods
 
 echo LOGLEVEL=$LOGLEVEL
 echo INTERVAL_MS=$INTERVAL_MS
@@ -256,6 +256,7 @@ LOGLEVEL=0
 		elif [ $delta -gt 0 ]
 		then
 			# Start pods
+			[ $delta -gt 5 ] && let delta=$(( $delta / 2)) # This will slow down the pod creation
 			log=$log"Replica mismatch, adjusting pod count by $delta"
 			while [ $delta -gt 0 ]
 			do
