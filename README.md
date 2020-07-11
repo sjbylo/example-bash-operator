@@ -28,11 +28,16 @@ test/startall.sh 1            # run tests on one CR
 ```
 (Open the startall.sh file for more options) 
 
-In a separate terminal run this command to view what's happening:
+In separate terminals run the following commands to view what's happening:
 
 ```
-watch -n1 kubectl get pods
+watch -n1 kubectl get pods    # View the managed pods
 ```
+
+```
+test/logs.sh    # View Operator output
+```
+
 
 To stop the above commands, hit Ctrl-C. 
 
