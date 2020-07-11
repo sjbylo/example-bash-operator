@@ -188,13 +188,13 @@ function reconcile {
 			log=$log"Image or command change, replacing all pods ..."
 			echo "$log"
 
-		echo "[$state_image] [$spec_image] [$state_cmd] [$spec_cmd]"
+			[ $LOGLEVEL -ge 1 ] && echo "[$state_image] [$spec_image] [$state_cmd] [$spec_cmd]" >&2
 
 			# Remove all the related pods ...
 			kubectl delete pods --selector=operator=$cr --now --wait=false >/dev/null
 
-			#state_image=$spec_image
-			#state_cmd=$spec_cmd
+			state_image=$spec_image
+			state_cmd=$spec_cmd
 
 			continue  # process next event 
 		fi
