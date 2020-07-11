@@ -41,19 +41,11 @@ test/logs.sh    # View Operator output
 
 To stop the above commands, hit Ctrl-C. 
 
-Optionally, view the logs of the Operator.
-
 
 Stop all tests and clean up all objects:
 
 ```
 test/stopall.sh
-```
-
-Stop the Operator:
-
-```
-kubectl delete deployment bash-operator
 ```
 
 
@@ -64,8 +56,8 @@ To set up the Operator, cluster-admin permissions are needed.  If you want to us
 With cluster-admin permissions, create the Custom Resource Definition (CRD) and the role/role binding, to allow the Operator to access the Kubernetes API:
 
 ```
-kubectl create -f deploy/crd-myapp.yaml       # create the CRD
-kubectl create -f deploy/role.yaml          # The Operator needs permission to access the Operator's API group myapp.stable.example.com
+kubectl create -f deploy/crd-myapp.yaml      # create the CRD
+kubectl create -f deploy/role.yaml           # The Operator needs permission to access the Operator's API group myapp.stable.example.com
 kubectl create -f deploy/role_binding.yaml  
 ```
 
@@ -92,7 +84,7 @@ kubectl create -f deploy/operator.yaml
 View the Operator output in a separate terminal:
 
 ```
-kubectl logs bash-operator -f
+test/logs.sh    # View Operator output
 ```
 
 ### Allow a normal user to create myapp CRs (optional)
@@ -109,7 +101,7 @@ kubectl create -f deploy/user_role_binding.yaml    # Be sure to add your user na
 Now, as a normal user, you can create a CR in the same way, as above.
 
 ```
-kubectl create -f deploy/cr-myapp2.yaml	 
+kubectl create -f deploy/cr-myapp2.yaml	--as=some-normal-user
 ```
 
 ### Manual testing
@@ -125,7 +117,7 @@ kubectl patch myapp myapp1 --type=json -p '[{"op": "replace", "path": "/spec/rep
 Delete a pod.  The Operator will add a pod:
 
 ```
-kubectl delete pod $(kubectl get pod --selector=operator=myapp1 -oname | tail -1)
+kubectl delete pod $(kubectl get pod --selector=operator=myapp1 -oname | tail -1) --now
 ```
 
 Add a pod.  The Operator will remove a pod:
@@ -141,7 +133,7 @@ kubectl delete myapp myapp1
 ```
 
 
-### Run the test scripts
+### Run the test script on its own
 
 A test script is provided that works by randomly setting the CR replica value and by deleting and adding pods.  The Operator will ensure that the correct number of pods are always running, as defined by .spec.replica in the CR.
 
