@@ -56,7 +56,7 @@ kubectl delete pod bash-operator --now
 
 echo Starting operator from quay.io/sjbylo/bash-operator:$tag ...
 #kubectl run bash-operator --env=LOGLEVEL=$loglevel --env=INTERVAL_MS=6000 \
-kubectl run bash-operator --env=LOGLEVEL=$loglevel --serviceaccount=bash-operator \
+kubectl run bash-operator --generator=run-pod/v1 --env=LOGLEVEL=$loglevel --serviceaccount=bash-operator \
         --image-pull-policy=Always --image=quay.io/sjbylo/bash-operator:$tag || exit 1
         #--image-pull-policy=Never --image=quay.io/sjbylo/bash-operator:$tag || exit 1
 
