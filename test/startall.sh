@@ -31,9 +31,9 @@ function stop_all() {
 
 
 # Set up
-kubectl create -f deploy/service_account.yaml
-kubectl create -f deploy/role.yaml
-kubectl create -f deploy/role_binding.yaml
+kubectl create -f $DEPLOY/service_account.yaml
+kubectl create -f $DEPLOY/role.yaml
+kubectl create -f $DEPLOY/role_binding.yaml
 
 # Refresh the CRD 
 #kubectl delete -f $DEPLOY/crd-myapp.yaml 2>/dev/null
