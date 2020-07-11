@@ -1,6 +1,6 @@
 # Example Kubernetes Operator in bash
 
-This simple Operator is written entirely in bash and shows how to create an Operator to manage a set of pods.  It works in a similar way to the usual Kubernetes replicaset controller, it ensures that the specified number of pods are running with the specified image and command.
+This simple [Operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) is written entirely in bash and shows how to create an Operator to manage a set of pods.  It works in a similar way to the usual Kubernetes replicaset controller, it ensures that the specified number of pods are running with the specified image and command.
 
 The Operator is able to control multiple custom resources in a single namespace.
 
