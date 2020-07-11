@@ -19,7 +19,7 @@ function stop_all() {
 	echo Stopping tests ...
 
 	#kubectl delete myapp --all --wait=false && sleep 2
-	#kubectl delete po bash-operator --wait=false 
+	kubectl delete po bash-operator --wait=false --now
 
 	l=`jobs -p`; [ "$l" ] && kill $l 2>/dev/null
 	sleep 1
@@ -75,6 +75,7 @@ while [ $i -le $cnt ]
 do
 	cat $dir/cr-myapp1.yaml | sed "s/myapp1/myapp$i/" | oc create -f -
 	$dir/test.sh myapp$i 999 $wait_time &   # If the cluster is slow, increase 12s to wait longer for test results
+	sleep $(($RANDOM % 5 + 1)) # Start tests at random times
 	let i=$i+1
 done
 

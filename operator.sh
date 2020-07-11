@@ -93,10 +93,10 @@ function timeUp {
 
 	if [ `expr $before + $interval` -gt `$DATE_CMD +%s%3N` ]
 	then
-		[ $LOGLEVEL -ge 1 ] && echo Timer running >&2
+		[ $LOGLEVEL -ge 2 ] && echo Timer running >&2
 		return 0  # time not up
 	fi
-	[ $LOGLEVEL -ge 1 ] && echo Time up >&2
+	[ $LOGLEVEL -ge 2 ] && echo Time up >&2
 	return 1  # time up
 }
 
@@ -111,10 +111,10 @@ function timeUp {
 function getRunningPods {
 	local cr=$1
 
-	running_pods=`kubectl get pod --selector=operator=$cr --ignore-not-found --no-headers | \
+	running_pods="`kubectl get pod --selector=operator=$cr --ignore-not-found --no-headers | \
 		grep -e "\bRunning\b" -e "\bPending\b" -e "\bContainerCreating\b"| \
-		awk '{print $1}'`
-	running_pod_count=`echo "$running_pods" | wc -l | $TR_CMD -d " "`
+		awk '{print $1}'`"
+	[ "$running_pods" ] && running_pod_count=`echo "$running_pods" | wc -l | $TR_CMD -d " "` || running_pod_count=0
 }
 
 function reconcile {
@@ -146,7 +146,7 @@ function reconcile {
 		[ $LOGLEVEL -ge 1 -a "$event" ] && echo "ret=[$ret] event=[$event]" >&2
 
 		# If there is a read timeout and also data?
-		[ $ret -eq 142 -a "$event" ] && echo FAILURE timeout and event=$event && return  # This should never happen 
+		#[ $ret -eq 142 -a "$event" ] && echo FAILURE timeout and event=$event && return  # This should never happen 
 
 		# If read not a timeout, process $event
 		#if [ $ret -ne 142 ]
@@ -163,20 +163,23 @@ function reconcile {
 					kubectl delete pod --selector=operator=$cr --now --wait=false >/dev/null
 					return 0  # This will stop the controller 
 				fi
-			elif [ "$obj" = "cleanup" ]; then
-				kubectl delete pod --selector=operator=$cr --now --wait=false --field-selector status.phase=Succeeded >/dev/null 
+			#elif [ "$obj" = "cleanup" ]; then  # FIXME  need to monitor Completed pods? 
+				#kubectl delete pod --selector=operator=$cr --now --wait=false --field-selector status.phase=Succeeded >/dev/null 
 			else
 				[ $LOGLEVEL -ge 1 ] && echo "WARNING: Unknown object type [$obj]" >&2
 				return # This should never happen
 			fi
 		else
-			[ $LOGLEVEL -ge 1 ] && echo "Read returned [$ret].  Event missing" >&2
+			[ $LOGLEVEL -ge 2 ] && echo "Read returned [$ret].  Event missing" >&2
 		fi
 		
-		timeUp $INTERVAL_MS $before && continue  # If timer still running, continue and process next event
+		timeUp $INTERVAL_MS $before && continue  # If timer still running, continue (process next event)
 		before=`$DATE_CMD +%s%3N` 
 
 		[ ! "$spec_image" -o ! "$spec_replica" -o ! "$spec_cmd" ] && echo "WARNING: spec missing [$spec_image $spec_replica $spec_cmd]" >&2
+
+		#getPodCount $cr FIXME 
+		getRunningPods $cr 
 
 		# Start the log message 
 		log="$cr $running_pod_count/$spec_replica running. " 
@@ -199,9 +202,6 @@ function reconcile {
 
 			continue  # process next event 
 		fi
-
-		#getPodCount $cr FIXME 
-		getRunningPods $cr 
 
 		state_replica=$running_pod_count
 
