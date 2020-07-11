@@ -37,7 +37,7 @@ function cleanup {
 function make_random_str {
 	len=${1-6}
 	#cat /dev/urandom | $TR_CMD -dc 'a-z0-9' | fold -w $len | head -n 1  FIXME try again with digits
-	cat /dev/urandom | $TR_CMD -dc 'a-z' | fold -w $len | head -n 1
+	cat /dev/urandom | $TR_CMD -dc 'a-z0-9' | fold -w $len | head -n 1
 }
 
 function save_pid {

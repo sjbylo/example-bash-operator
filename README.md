@@ -59,7 +59,7 @@ To set up the Operator, cluster-admin permissions are needed.  If you want to us
 With cluster-admin permissions, create the Custom Resource Definition (CRD) and the role/role binding, to allow the Operator to access the Kubernetes API:
 
 ```
-kubectl create -f test/crd-myapp.yaml       # create the CRD
+kubectl create -f deploy/crd-myapp.yaml       # create the CRD
 kubectl create -f deploy/role.yaml          # The Operator needs permission to access the Operator's API group myapp.stable.example.com
 kubectl create -f deploy/role_binding.yaml  
 ```
@@ -67,7 +67,7 @@ kubectl create -f deploy/role_binding.yaml
 Now create a test CR called "myapp1":
 
 ```
-kubectl create -f test/cr-myapp1.yaml	 
+kubectl create -f deploy/cr-myapp1.yaml	 
 ```
 
 Have a look at the "myapp1" Customer Resource.  Note that "replica" is set to the required number of pods.
@@ -104,7 +104,7 @@ kubectl create -f deploy/user_role_binding.yaml    # Be sure to add your user na
 Now, as a normal user, you can create a CR in the same way, as above.
 
 ```
-kubectl create -f test/cr-myapp2.yaml	 
+kubectl create -f deploy/cr-myapp2.yaml	 
 ```
 
 ### Manual testing
@@ -126,7 +126,7 @@ kubectl delete pod $(kubectl get pod --selector=operator=myapp1 -oname | tail -1
 Add a pod.  The Operator will remove a pod:
 
 ```
-kubectl run myapp1-added --generator=run-pod/v1 --wait=false --image=busybox -l operator=myapp1 -- sleep 9999
+kubectl run myapp1-added --wait=false --image=busybox -l operator=myapp1 -- sleep 9999
 ```
 
 Delete the CR itself.  The Operator clean up all pods:
@@ -207,8 +207,8 @@ kubectl get pod --selector=operator=$cr --watch --no-headers --ignore-not-found 
 You will need to create the CRD and the role with _cluster-admin_ permissions, otherwise you will see the following errors:
 
 ```
-kubectl create -f test/crd-myapp.yaml
-Error from server (Forbidden): error when creating "test/crd-myapp.yaml": customresourcedefinitions.apiextensions.k8s.io is forbidden: User "user0" cannot create resource "customresourcedefinitions" in API group "apiextensions.k8s.io" at the cluster scope
+kubectl create -f deploy/crd-myapp.yaml
+Error from server (Forbidden): error when creating "deploy/crd-myapp.yaml": customresourcedefinitions.apiextensions.k8s.io is forbidden: User "user0" cannot create resource "customresourcedefinitions" in API group "apiextensions.k8s.io" at the cluster scope
 ```
  
 or

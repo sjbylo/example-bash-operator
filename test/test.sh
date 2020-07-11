@@ -35,8 +35,8 @@ function addPod {
   local i=0
   while [ $i -lt $1 ]
   do
-      kubectl run $cr-$RANDOM --generator=run-pod/v1 --wait=false --restart=Never --image=$theImage -l operator=$cr -- sleep 99999999 >/dev/null 2>&1
-      #kubectl run $cr-$RANDOM --generator=run-pod/v1 --wait=false --restart=Never --image=$theImage -l operator=$cr --image-pull-policy=Never -- sleep 99999999 >/dev/null 2>&1
+      kubectl run $cr-$RANDOM --wait=false --restart=Never --image=$theImage -l operator=$cr -- sleep 99999999 >/dev/null 2>&1
+      #kubectl run $cr-$RANDOM --wait=false --restart=Never --image=$theImage -l operator=$cr --image-pull-policy=Never -- sleep 99999999 >/dev/null 2>&1
       let i=$i+1
   done
 }

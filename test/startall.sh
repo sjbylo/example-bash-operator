@@ -7,6 +7,7 @@ wait_time=${3-15}  # wait time for each test
 loglevel=${4-}	# debug output of operator or not (default is info, 1 is some 2 is full)
 
 dir=`dirname $0`
+DEPLOY=$dir/../deploy
 
 watch_opts="--watch --no-headers --ignore-not-found"
 
@@ -35,8 +36,8 @@ kubectl create -f deploy/role.yaml
 kubectl create -f deploy/role_binding.yaml
 
 # Refresh the CRD 
-#kubectl delete -f $dir/crd-myapp.yaml 2>/dev/null
-kubectl create -f $dir/crd-myapp.yaml
+#kubectl delete -f $DEPLOY/crd-myapp.yaml 2>/dev/null
+kubectl create -f $DEPLOY/crd-myapp.yaml
 
 # Delete any CRs
 kubectl delete myapp --all --wait=false
@@ -54,8 +55,8 @@ kubectl delete myapp --all --wait=false
 kubectl delete pod bash-operator --now
 
 echo Starting operator from quay.io/sjbylo/bash-operator:$tag ...
-#kubectl run bash-operator --env=LOGLEVEL=$loglevel --env=INTERVAL_MS=6000 --generator=run-pod/v1 \
-kubectl run bash-operator --env=LOGLEVEL=$loglevel --generator=run-pod/v1  --serviceaccount=bash-operator \
+#kubectl run bash-operator --env=LOGLEVEL=$loglevel --env=INTERVAL_MS=6000 \
+kubectl run bash-operator --env=LOGLEVEL=$loglevel --serviceaccount=bash-operator \
         --image-pull-policy=Always --image=quay.io/sjbylo/bash-operator:$tag || exit 1
         #--image-pull-policy=Never --image=quay.io/sjbylo/bash-operator:$tag || exit 1
 
@@ -73,7 +74,7 @@ sleep 1
 i=1
 while [ $i -le $cnt ]
 do
-	cat $dir/cr-myapp1.yaml | sed "s/myapp1/myapp$i/" | oc create -f -
+	cat $DEPLOY/cr-myapp1.yaml | sed "s/myapp1/myapp$i/" | oc create -f -
 	$dir/test.sh myapp$i 999 $wait_time &   # If the cluster is slow, increase 12s to wait longer for test results
 	sleep $(($RANDOM % 5 + 1)) # Start tests at random times
 	let i=$i+1

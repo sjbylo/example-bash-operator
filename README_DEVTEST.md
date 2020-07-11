@@ -15,18 +15,19 @@ View the operator logs:
 kubectl logs bash-operator -f 
 ```
 
-Run the tests once, using the dev tag, with highest log level
+Run the tests once, using the "dev" tag, with highest log level (2)
 
 ```
 test/startall.sh 1 dev 2
 ```
-See the test/startall.sh for more
 
-Run the operator with full log level
+See the test/startall.sh script for more.
+
+Run the operator with full log level:
 
 ```
-kubectl run bash-operator --env=LOGLEVEL=2 --generator=run-pod/v1 --image-pull-policy=Always --image=quay.io/sjbylo/bash-operator:dev
-kubectl create -f test/cr-myapp1.yaml
+kubectl run bash-operator --env=LOGLEVEL=2 --image-pull-policy=Always --image=quay.io/sjbylo/bash-operator:dev
+kubectl create -f deploy/cr-myapp1.yaml
 test/test.sh myapp1
 ```
 
@@ -35,5 +36,4 @@ View the Operator's logs:
 ```
 test/logs.sh 
 ```
-
 

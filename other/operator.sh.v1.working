@@ -162,7 +162,7 @@ function reconcile {
 		log=$log"Adjusting pod count by [$start]"
 		while [ $start -gt 0 ]
 		do
-			kubectl run $cr-`make_random_str` --wait=false --image=$spec_image --generator=run-pod/v1 -l operator=$cr -- $spec_cmd >/dev/null
+			kubectl run $cr-`make_random_str` --wait=false --image=$spec_image -l operator=$cr -- $spec_cmd >/dev/null
 			let start=$start-1
 		done
 		#stat_image=$spec_image
