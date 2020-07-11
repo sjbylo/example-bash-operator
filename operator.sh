@@ -141,20 +141,21 @@ function reconcile {
 	# Loop through all the events from the watched objects.  
 	while true
 	do
-		read -t1 line   # Timeout so we have a chance to make changes. 
+		read -t1 event   # Timeout so we have a chance to make changes. 
 		ret=$?
-		[ $LOGLEVEL -ge 1 ] && echo "ret=[$ret] line=[$line]" >&2
-
-		# Each event is <event type>:<event details>   e.g.  myapp:myapp1 
-		obj=`echo $line | cut -d: -f1`
-		event=`echo $line | cut -d: -f2 | $TR_CMD -s " "`
+		[ $LOGLEVEL -ge 1 -a "$event" ] && echo "ret=[$ret] event=[$event]" >&2
 
 		# If there is a read timeout and also data?
-		[ $ret -eq 142 -a "$line" ] && echo FAILURE timeout and line=$line && return  # This should never happen 
+		[ $ret -eq 142 -a "$event" ] && echo FAILURE timeout and event=$event && return  # This should never happen 
 
-		# If read not a timeout, process $line
-		if [ $ret -ne 142 ]
+		# If read not a timeout, process $event
+		#if [ $ret -ne 142 ]
+		if [ "$event" ]
 		then
+			# Each event is <event type>:<event details>   e.g.  myapp:myapp1 
+			obj=`echo $event | cut -d: -f1`
+			#event=`echo $line | cut -d: -f2 | $TR_CMD -s " "`
+
 			if [ "$obj" = "myapp" ]; then
 				# Retrieve the CR spec.  If CR object deleted, delete all managed objects
 				if ! getSpec $cr; then
@@ -169,7 +170,7 @@ function reconcile {
 				return # This should never happen
 			fi
 		else
-			[ $LOGLEVEL -ge 1 ] && echo "Read returned [$ret]" >&2
+			[ $LOGLEVEL -ge 1 ] && echo "Read returned [$ret].  Event missing" >&2
 		fi
 		
 		timeUp $INTERVAL_MS $before && continue  # If timer still running, continue and process next event
