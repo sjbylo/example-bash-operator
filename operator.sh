@@ -111,7 +111,7 @@ function timeUp {
 function getRunningPods {
 	local cr=$1
 
-	running_pods=`kubectl get pod --selector=operator=$cr --ignore-not-found | \
+	running_pods=`kubectl get pod --selector=operator=$cr --ignore-not-found --no-headers | \
 		grep -e "\bRunning\b" -e "\bPending\b" -e "\bContainerCreating\b"| \
 		awk '{print $1}'`
 	running_pod_count=`echo "$running_pods" | wc -l | $TR_CMD -d " "`
@@ -317,7 +317,7 @@ function main_manager {
 
 	while true
 	do
-		cr_list=`kubectl get $CRD_NAME --no-headers | awk '{print $1}'`
+		cr_list=`kubectl get $CRD_NAME --no-headers --ignore-not-found | awk '{print $1}'`
 
 		# Check for new custom resources
 		for cr in $cr_list
