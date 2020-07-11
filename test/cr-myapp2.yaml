@@ -5,5 +5,5 @@ metadata:
 spec:
   replica: 2
   image: busybox
-  command: sleep 99999999
+  command: sleep 99999
 

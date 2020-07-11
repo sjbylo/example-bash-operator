@@ -181,7 +181,7 @@ docker push quay.io/sjbylo/bash-operator
 
 The Operator can be tested by running it directly on a Linux machine or on Kubernetes.  It has been tested on the following: RHEL 7.5, Fedora 32, Minikube, Kubernetes 1.17 and OpenShift 4.4.
 
-Note that, for local testing purposes, the operator.sh script will not work on Mac OS (Darwin) as some of the commands in Mac OS work in different ways. 
+Note that, for local testing purposes, the operator.sh script will also work on Mac OS (Darwin) as long as bash is v4 or above and gtr and gdate are installed with brew. 
 
 The Operator requires bash version 4 or above because it makes use of associative arrays.
 
