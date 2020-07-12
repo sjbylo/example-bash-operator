@@ -16,6 +16,8 @@ type gtr 2>/dev/null >&2 && TR_CMD=gtr || TR_CMD=tr
 [ "$LOGLEVEL" ] || LOGLEVEL=0
 [ $LOGLEVEL -ge 1 ] && echo LOGLEVEL=$LOGLEVEL
 
+echo Process: $$
+
 INTERVAL_MS=${INTERVAL_MS-3000}     # time to wait in ms before making changes to pods in reconcile()
 [ $LOGLEVEL -ge 1 ] && echo INTERVAL_MS=$INTERVAL_MS
 
@@ -286,20 +288,20 @@ function start_controller {
 		watch_opts="--watch --no-headers --ignore-not-found"
 
 		echo Starting watch for custom resource: $CRD_NAME/$cr
-		run_cmd kubectl get myapp $cr $watch_opts | prepend myapp > $PIPE &
-		save_pid $cr $!
+		run_cmd kubectl get myapp $cr $watch_opts | prepend myapp >> $PIPE &
+		#save_pid $cr $!
 
 		kubectl patch myapp $cr --type=json -p '[{"op": "add", "path": "/metadata/finalizers", "value": ["finalizer.stable.example.com"]}]'
 
 		#sleep 0.5
 		#
-		#run_cmd kubectl get pod --selector=operator=$cr $watch_opts | prepend pod > $PIPE &
+		#run_cmd kubectl get pod --selector=operator=$cr $watch_opts | prepend pod >> $PIPE &
 		#save_pid $cr $!
 
 		echo Starting reconcile function for custom resource: $CRD_NAME/$cr
 		reconcile $cr $PIPE  # wait here 
 
-		stop_controller $cr 
+		#stop_controller $cr 
 	) &
 	#save_pid $cr $!
 }
@@ -307,8 +309,9 @@ function start_controller {
 function stop_controller {
 	# $1 = custom resource
 	local cr=$1
-
 	local pids=`get_pids $cr`
+
+	echo Stopping controller $cr ...
 
 	cleanupTempFiles $cr
 
