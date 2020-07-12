@@ -41,5 +41,10 @@ spec:
             status:
               type: object
               properties:
+                image:
+                  type: string
                 replica:
                   type: integer
+                command:
+                  type: string
+

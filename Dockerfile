@@ -20,4 +20,4 @@ RUN mkdir /.kube && chmod -R 770 . /.kube
 
 USER 1001
 
-CMD ./operator.sh 
+CMD LOGLEVEL=1 ./operator.sh 2>>log | tee -a log
