@@ -1,7 +1,7 @@
 #!/bin/bash
 # Test operator script
 
-cnt=${1-3} 	# number of concurrent tests, default ia 3
+cnt=${1-2} 	# number of concurrent tests, default ia 2
 tag=${2-latest}	# which image tag? dev or latest
 wait_time=${3-15}  # wait time for each test
 loglevel=${4-}	# debug output of operator or not (default is info, 1 is some 2 is full)

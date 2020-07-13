@@ -1,24 +1,25 @@
 #!/usr/bin/env bash 
 # MyApp Operator acts like a replica-set controller
 # Bash version 4 or higher is needed
+# Reasonably up to date tr and date commands are needed
 
-# Set the name of the CRD
+# Set the name of the CRD.  This is a fictitious application called MyApp. 
 CRD_NAME=myapp 
 
 base=`basename $0`
 tempfile=/tmp/.op.$CRD_NAME.$$
 
-# Install gdate and gtr with brew to allow this script to work on MacOS
+# To run this script directly on MacOS, install gdate and gtr with brew.
 type gdate 2>/dev/null >&2 && DATE_CMD=gdate || DATE_CMD=date
-type gtr 2>/dev/null >&2 && TR_CMD=gtr || TR_CMD=tr
+type gtr   2>/dev/null >&2 && TR_CMD=gtr     || TR_CMD=tr
 
 [ "$LOGLEVEL" = "2" ] && set -x
 [ "$LOGLEVEL" ] || LOGLEVEL=0
 [ $LOGLEVEL -ge 1 ] && echo LOGLEVEL=$LOGLEVEL
 
-echo Process: $$
+echo MyApp Operator process ID: $$
 
-INTERVAL_MS=${INTERVAL_MS-3000}     # time to wait in ms before making changes to pods in reconcile()
+INTERVAL_MS=${INTERVAL_MS-3000}     # time to wait in ms before making changes to controlled pods in the reconcile function.
 [ $LOGLEVEL -ge 1 ] && echo INTERVAL_MS=$INTERVAL_MS
 
 
@@ -42,17 +43,6 @@ function make_random_str {
 	cat /dev/urandom | $TR_CMD -dc 'a-z0-9' | fold -w $len | head -n 1
 }
 
-function save_pid {
-	# $1 is cr name
-	# $2 is PID
-	echo $2 >> $tempfile.$1.pids
-}
-
-function get_pids {
-	# $1 is cr name
-	cat $tempfile.$1.pids
-}
-
 # trap ctrl-c or terminate and call exit_all()
 trap exit_all INT
 trap exit_all TERM
@@ -62,16 +52,12 @@ function exit_all() {
 	echo
 	echo "Trap starting ..."
 
-	echo Jobs:
-	jobs
+	[ $LOGLEVEL -ge 1 ] && echo Jobs: && jobs
 
 	echo Terminating processes:
-	jobs -p  # FIXME
 	kill `jobs -p`
 	sleep 1
-
-	jobs -p
-	kill `jobs -p`
+	kill `jobs -p` 2>/dev/null
 
 	cleanupTempFiles
 
@@ -79,7 +65,7 @@ function exit_all() {
 	exit 0
 }
 
-#### ALl folllowing functions are related to the reconcile function
+#### All following functions are related to the reconcile function
 
 function getCRSpec {
 	cr=$1
@@ -96,15 +82,18 @@ function getCRSpec {
 	spec_cmd=`echo "$json"     | jq -r '.spec.command'`
 	metadata_deletionTimestamp=`echo "$json"     | jq -r '.metadata.deletionTimestamp'`
 
+	[ ! "$spec_image" -o ! "$spec_replica" -o ! "$spec_cmd" ] && echo "Warning ($cr): spec missing [$spec_image $spec_replica $spec_cmd]" >&2 
+
 	return 0
 }
 
+# Simple timer 
 function timeUp {
 	# If still within $1 ms from the last time $before
 	local interval=$1   # interval in ms
 	#local before=$2  
 
-	if [ `expr $before + $interval` -gt `$DATE_CMD +%s%3N` ]
+	if [ $(( $before + $interval )) -gt `$DATE_CMD +%s%3N` ]
 	then
 		[ $LOGLEVEL -ge 2 ] && echo Timer running >&2
 		return 0  # time not up
@@ -116,6 +105,7 @@ function timeUp {
 	return 1  # time up
 }
 
+# Refresh the current state of the controlled pods
 function getRunningPods {
 	local cr=$1
 
@@ -132,19 +122,18 @@ function reconcile {
 	before=0
 
 	getCRSpec $cr  # Fetch the initial spec from the CR object
-	[ ! "$spec_image" -o ! "$spec_replica" -o ! "$spec_cmd" ] && echo "Warning ($cr): spec missing [$spec_image $spec_replica $spec_cmd]" >&2 && exit 
 
 	# Set up the status in the CR
 	kubectl patch myapp $cr --type=json -p '[{"op": "replace", "path": "/status", "value": {}}]' >/dev/null
 
 	getRunningPods $cr
 
-	# FIXME: Shortcut is to simply assume any existing pods are using these values bydefault.  
+	# FIXME: Shortcut is to simply assume any existing pods are using these values by default.  
 	# Should really check or just delete all existing pods.
 	state_image=busybox
 	state_cmd="sleep 99999"
 
-	# Loop through all the events from the watched objects.  
+	# Loop through all the events from the watched objects (in this case just myapp objects).
 	while true
 	do
 		read -t1 event   # -t timeout used so we have a chance to make changes. 
@@ -157,21 +146,19 @@ function reconcile {
 		# If event available, process $event
 		if [ "$event" ]
 		then
-			# Each event is <event type>:<event details>   e.g.  myapp:myapp1 
+			# Each event is <event type>:<event details>   e.g.  myapp:myapp1 or pod:mypod-xyz
 			obj=`echo $event | cut -d: -f1`
-			#event=`echo $line | cut -d: -f2 | $TR_CMD -s " "`
 
 			if [ "$obj" = "myapp" ]; then
 				getCRSpec $cr  # refresh the spec
-				[ ! "$spec_image" -o ! "$spec_replica" -o ! "$spec_cmd" ] && echo "WARNING: spec missing [$spec_image $spec_replica $spec_cmd]" >&2
 
 				# Check if the object is being deleted ...
 				if [ "$metadata_deletionTimestamp" != "null" ]; then 
-					[ $LOGLEVEL -ge 1 ] && echo "Deleteing all managed pods for $cr" >&2
+					[ $LOGLEVEL -ge 1 ] && echo "Deleting all controlled pods for $cr" >&2
 					kubectl delete pod --selector=operator=$cr --now --wait=false >/dev/null
 
-					# Remove the finalizers ... allow the object to be garbage collected 
-					kubectl patch myapp $cr --type=json -p '[{"op": "remove", "path": "/metadata/finalizers"}]'
+					# Remove the finalizers ... allow the CR object to be garbage collected 
+					kubectl patch myapp $cr --type=json -p '[{"op": "remove", "path": "/metadata/finalizers"}]' >/dev/null
 
 					return 0  # This will stop and clean up the controller 
 				fi
@@ -181,15 +168,15 @@ function reconcile {
 				[ $LOGLEVEL -ge 1 ] && echo "Warning ($cr): Unknown object type [$obj]" >&2
 				# return # This should never happen (but it does!) 
 				# Sometimes "read" returns "yapp" instead of "myapp"!
-				# Warning (myapp1): Unknown object type [yapp]
+				# "Warning (myapp1): Unknown object type [yapp]"
 			fi
 		else
-			[ $LOGLEVEL -ge 2 ] && echo "Read returned [$ret].  Event missing" >&2
+			[ $LOGLEVEL -ge 2 ] && echo "Warning ($cr): Read returned [$ret].  Event missing" >&2
 		fi
 		
-		timeUp $INTERVAL_MS $before && continue  # If timer still running, continue (process next event)
+		timeUp $INTERVAL_MS $before && continue       # If timer still running, continue (process next event)
 
-		# Refresh pod state
+		# Refresh current state of controlled pods
 		getRunningPods $cr 
 
 		# Start the log message 
@@ -202,10 +189,10 @@ function reconcile {
 
 			[ $LOGLEVEL -ge 1 ] && echo "[$state_image] [$spec_image] [$state_cmd] [$spec_cmd]" >&2
 
-			# Remove all the managed pods ...
+			# Remove all the controlled pods ...
 			kubectl delete pods --selector=operator=$cr --now --wait=false >/dev/null
 
-			# Need these here!
+			# Remember what the expected state will be
 			state_image=$spec_image
 			state_cmd=$spec_cmd
 
@@ -214,7 +201,8 @@ function reconcile {
 
 		state_replica=$running_pod_count
 
-		delta=`expr $spec_replica - $state_replica`
+		#delta=`expr $spec_replica - $state_replica`
+		delta=$(( $spec_replica - $state_replica ))
 
 		if [ $delta -lt 0 ]
 		then
@@ -232,7 +220,7 @@ function reconcile {
 		elif [ $delta -gt 0 ]
 		then
 			# Start pods
-			[ $delta -gt 5 ] && let delta=$(( $delta / 2)) # This will slow down the pod creation
+			[ $delta -gt 8 ] && let delta=$(( $delta / 2 )) # This will slow down the pod creation
 			log=$log"Replica mismatch, adjusting pod count by $delta"
 			while [ $delta -gt 0 ]
 			do
@@ -266,7 +254,7 @@ function run_cmd {
 		$@
 		cmd_ret=$?
 		echo "Warning ($cr): command '"$@"' exited with $cmd_ret ..." >&2
-		[ $cmd_ret -gt 128 ] && echo "Warning ($cr) signal `expr $ret - 128` sent to run_cmd(), breaking out" >&2 && break 
+		[ $cmd_ret -gt 128 ] && echo "Warning ($cr) signal $(( $ret - 128 )) sent to run_cmd(), breaking out" >&2 && break 
 	done
 }
 
@@ -291,60 +279,32 @@ function start_controller {
 
 		echo Starting watch for custom resource: $CRD_NAME/$cr
 		run_cmd kubectl get myapp $cr $watch_opts | prepend myapp >> $PIPE &
-		#save_pid $cr $!
 
-		kubectl patch myapp $cr --type=json -p '[{"op": "add", "path": "/metadata/finalizers", "value": ["finalizer.stable.example.com"]}]'
+		kubectl patch myapp $cr --type=json -p '[{"op": "add", "path": "/metadata/finalizers", "value": ["finalizer.stable.example.com"]}]' >/dev/null
 
-		#sleep 0.5
-		#
 		#run_cmd kubectl get pod --selector=operator=$cr $watch_opts | prepend pod >> $PIPE &
-		#save_pid $cr $!
 
 		echo Starting reconcile function for custom resource: $CRD_NAME/$cr
-		reconcile $cr $PIPE  # wait here 
+		reconcile $cr $PIPE  # the reconcile function runs until the controller ends.
 
 		echo Terminating processes:
-		jobs
+		[ $LOGLEVEL -ge 1 ] && jobs && jobs -p
 
-		jobs -p  # FIXME
 		kill `jobs -p`
 		sleep 1
-
-		jobs -p
-		kill `jobs -p`
+		kill `jobs -p` 2>/dev/null
 
 		cleanupTempFiles $cr
 
-		echo Exiting controller now ...
+		echo Exiting controller for $CRD_NAME/$cr ...
 	) &
-	#save_pid $cr $!
 }
 
-function stop_controller {
-	# $1 = custom resource
-	local cr=$1
-	#local pids=`get_pids $cr`
-
-	echo Stopping controller $cr ...
-
-
-	#unset cr_map[$cr]
-
-	#echo Terminating processes $pids
-	#kill $pids
-	#sleep 1
-
-	#kill $pids 
-	#sleep 2
-
-	#echo Killing processes $pids
-	#kill -9 $pids 
-}
 
 function main_manager {
 	# This function does the following
 	# - Looks for new custom resource and for each new custom resource it starts a new controller
-	# - Looks for deleted custom resources and for each deleted custom resource it stops the controller (which will also stop all managed objects) 
+	# - Looks for deleted custom resources and for each deleted custom resource it stops the controller (which will also stop all controlled objects) 
 
 	local wait_time=5
 
