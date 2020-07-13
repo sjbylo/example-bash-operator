@@ -1,6 +1,8 @@
 # Example Kubernetes Operator in bash
 
-This simple [Operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) is written entirely in bash and shows how to create an Operator to manage a set of pods.  It works in a similar way to the usual Kubernetes replicaset controller, it ensures that the specified number of pods are running with the specified image and command.
+This project was created for fun and learning purposes only!
+
+This simple [Operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) is written entirely in bash and shows how to create an Operator to control a set of pods.  It works in a similar way to the usual Kubernetes replicaset controller, it ensures that the specified number of pods are running with the specified image and command.
 
 The Operator is able to control multiple custom resources in a single namespace.
 
@@ -31,7 +33,7 @@ test/startall.sh 1            # run tests on one CR
 In separate terminals run the following commands to view what's happening:
 
 ```
-watch -n1 kubectl get pods    # View the managed pods
+watch -n1 kubectl get pods    # View the controlled pods
 ```
 
 ```
@@ -126,7 +128,7 @@ Add a pod.  The Operator will remove a pod:
 kubectl run myapp1-added --wait=false --image=busybox -l operator=myapp1 -- sleep 9999
 ```
 
-Delete the CR itself.  The Operator clean up all pods:
+Delete the CR itself.  The Operator will clean up all controlled pods:
 
 ```
 kubectl delete myapp myapp1
@@ -146,20 +148,31 @@ test/test.sh myapp1
 
 ### Local testing on a Linux machine
 
+The Operator can be tested by running it directly on a Linux machine.  It has been tested on the following: MacOS (with brew), RHEL 7.5, Fedora 32, Minikube, Kubernetes 1.17 and OpenShift 4.4.
+
+Note that, for local testing purposes, the operator.sh script will also work on Mac OS (Darwin) as long as bash is v4 or above and gtr and gdate are installed with brew. 
+
+The Operator requires bash version 4 or above because it makes use of associative arrays.
+
 On a Linux machine, ensure kubectl is installed and authenticated with a Kubernetes or OpenShift cluster.  Also ensure that "jq" is installed.
 
 Run the Operator:
 
 ```
-./operator.sh 2>err.log; sleep 1; test/cleanup.sh    # Enter Ctr-C to stop it!
+./operator.sh 2>err.log    # Enter Ctr-C to stop it!
 ```
 
-A cleanup script can be used to remove any background processes that might get left behind after the Operator is stopped:
+Test the Operator using the test script:
+
+```
+test/test.sh myapp1
+```
+
+Just in case, a cleanup script can be used to remove any background processes that might get left behind after the Operator is stopped:
 
 ```
 test/cleanup.sh
 ```
-
 
 ## Build the Operator
 
@@ -173,35 +186,27 @@ docker tag  bash_operator  quay.io/sjbylo/bash-operator  && \
 docker push quay.io/sjbylo/bash-operator 
 ```
 
+See the build/build.sh script for more.
 
-## Work in progress
-
-The Operator can be tested by running it directly on a Linux machine or on Kubernetes.  It has been tested on the following: RHEL 7.5, Fedora 32, Minikube, Kubernetes 1.17 and OpenShift 4.4.
-
-Note that, for local testing purposes, the operator.sh script will also work on Mac OS (Darwin) as long as bash is v4 or above and gtr and gdate are installed with brew. 
-
-The Operator requires bash version 4 or above because it makes use of associative arrays.
 
 ## Miscellaneous
 
 The following commands are useful to follow the progress during testing.  Run them in separate terminals. 
 
-This command shows the pods that are running and the watch commands, used by the Operator:
+This command shows the controlled pods that are associated with the CR myapp1:
 
 ```
-cr=myapp1  # Set the name of your Custom Resource
-watch -n1 "kubectl get po --selector=operator=$cr; ps -ef | grep 'kubectl get ' | grep -v ' watch' | grep -v grep"
+watch -n1 kubectl get po --selector=operator=myapp1
 ```
 
-These are the commands that are used by the Operator to set a watch on events related to the Operator (the CR and its child objects). Note that any child objects that the object manages are labeled so they they can be easily watched.
+These commands are used by the Operator to watch events related to the Operator (the CR and its child objects). Note that any child objects (pods) that the CR controls are labeled so they can be easily identified.
 
 ```
-cr=myapp1
-kubectl get myapp --watch --no-headers --ignore-not-found                        # watch the CR itself
-kubectl get pod --selector=operator=$cr --watch --no-headers --ignore-not-found  # watch all controlled resources 
+kubectl get myapp --watch --no-headers --ignore-not-found                           # watch the CR itself
+kubectl get pod --selector=operator=myapp1 --watch --no-headers --ignore-not-found  # watch all controlled resources 
 ```
 
-You will need to create the CRD and the role with _cluster-admin_ permissions, otherwise you will see the following errors:
+You will need to create the CRD and the role with _cluster-admin_ permissions, otherwise you may see the following errors:
 
 ```
 kubectl create -f deploy/crd-myapp.yaml
@@ -214,4 +219,5 @@ or
 create -f deploy/role.yaml
 Error from server (Forbidden): error when creating "deploy/role.yaml": roles.rbac.authorization.k8s.io "bash-operator" is forbidden...
 ```
+
 
