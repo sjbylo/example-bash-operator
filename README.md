@@ -95,7 +95,7 @@ With cluster-admin permissions, run the following:
 
 ```
 kubectl create -f deploy/user_role.yaml
-kubectl create -f deploy/user_role_binding.yaml    # Be sure to add your user name
+kubectl create -f deploy/user_role_binding.yaml  
 ```
 
 Now, as a normal user, you can create a CR in the same way, as above.
