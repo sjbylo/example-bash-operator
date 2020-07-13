@@ -52,7 +52,7 @@ function exit_all() {
 	echo
 	echo "Trap starting ..."
 
-	[ $LOGLEVEL -ge 1 ] && echo Jobs: && jobs
+	[ $LOGLEVEL -ge 1 ] && echo Jobs: >&2 && jobs >&2
 
 	echo Terminating processes:
 	kill `jobs -p`
@@ -288,7 +288,7 @@ function start_controller {
 		reconcile $cr $PIPE  # the reconcile function runs until the controller ends.
 
 		echo Terminating processes:
-		[ $LOGLEVEL -ge 1 ] && jobs && jobs -p
+		[ $LOGLEVEL -ge 1 ] && jobs >&2 && jobs -p >&2
 
 		kill `jobs -p`
 		sleep 1
