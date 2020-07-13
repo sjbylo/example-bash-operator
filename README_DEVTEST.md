@@ -37,7 +37,7 @@ View the Operator's logs:
 test/logs.sh 
 ```
 
-The cluster wide CRD cannot be deleted until all CR objects have been deleted. Removing a finalizer in a CR:
+The cluster wide CRD cannot be deleted until all CR objects within the cluster have been deleted. Normally, the Operator would detect the deletion of a CR, delete the controlled pods and then allow the CR to be garbage collected.  If that goes wrong, here is how to removing a finalizer in a CR:
 
 ```
 kubectl patch ma myapp1 --type=merge -p '{"metadata": {"finalizers":null}}'

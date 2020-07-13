@@ -4,7 +4,7 @@ This project was created for fun and learning purposes only!
 
 This simple [Operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) is written entirely in bash and shows how to create an Operator to control a set of pods.  It works in a similar way to the usual Kubernetes replicaset controller, it ensures that the specified number of pods are running with the specified image and command.
 
-The Operator is able to control multiple custom resources in a single namespace.
+The Operator is able to control multiple custom resources in a single namespace. 
 
 ## Getting started
 
@@ -23,7 +23,7 @@ oc new-project operator-test
 
 ### Test the Operator using the provided scripts
 
-The quick way to test this is to run the following commands in separate terminals with cluster-admin permissions. This will set up the CRD and the CRs, roles and permissions, launch the Operator and run the tests. 
+The quick way to test this is to run the following commands in separate terminals with cluster-admin permissions. This will set up the CRD and the CRs, roles and permissions, launch the Operator and run the tests.  Note that the first time this is run, the test images (busybox and whalesay) need to be pulled, so the tests might timeout and fail.  Just try again if this happens.  
 
 ```
 test/startall.sh 1            # run tests on one CR 
@@ -139,13 +139,16 @@ kubectl delete myapp myapp1
 
 ### Run the test script on its own
 
-A test script is provided that works by randomly setting the CR replica value and by deleting and adding pods.  The Operator will ensure that the correct number of pods are always running, as defined by .spec.replica in the CR.
+A test script is provided that works by randomly setting the CR's replica value, deleting and adding pods, deleting and removing CRs and switching the desired image.  The Operator will ensure that the correct number of pods are always running, as defined by .spec.replica in each CR.  The script can be run multiple times in parallel to simulate multiple CRs.
 
-Start the test script in a different terminal:
+Start one or more test scripts in a different terminal:
 
 ```
 test/test.sh myapp1
+# or
+( test/test.sh myapp1 & test/test.sh myapp2 )
 ```
+
 
 
 ### Local testing on a Linux machine
