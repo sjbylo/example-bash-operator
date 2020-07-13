@@ -53,6 +53,8 @@ test/stopall.sh
 
 ### Testing the Operator, step by step
 
+Be sure to run the above "stopall" script before you begin here.
+
 To set up the Operator, cluster-admin permissions are needed.  If you want to use the Operator as a normal user, also see below. 
 
 With cluster-admin permissions, create the Custom Resource Definition (CRD) and the role/role binding, to allow the Operator to access the Kubernetes API:
