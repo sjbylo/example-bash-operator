@@ -37,3 +37,9 @@ View the Operator's logs:
 test/logs.sh 
 ```
 
+The cluster wide CRD cannot be deleted until all CR objects have been deleted. Removing a finalizer in a CR:
+
+```
+kubectl patch ma myapp1 --type=merge -p '{"metadata": {"finalizers":null}}'
+```
+
