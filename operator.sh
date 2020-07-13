@@ -29,7 +29,7 @@ function cleanupTempFiles {
 	then
 		# Custom resource deleted - clean up only the custom resource related files
 		[ $LOGLEVEL -ge 1 ] && echo Deleting files: $tempfile.$1.pipe $tempfile.$1.pids >&2
-		rm -f $tempfile.$1.pipe $tempfile.$1.pids
+		rm -f $tempfile.$1.pipe $tempfile.$1.pids  #FIXME pids needed? 
 	else
 		# Clean up everything
 		[ $LOGLEVEL -ge 1 ] && echo Deleting files: $tempfile.* >&2
@@ -62,15 +62,18 @@ function exit_all() {
 	echo
 	echo "Trap starting ..."
 
-	local pids=`cat $tempfile.*.pids`
+	echo Jobs:
+	jobs
+
+	echo Terminating processes:
+	jobs -p  # FIXME
+	kill `jobs -p`
+	sleep 1
+
+	jobs -p
+	kill `jobs -p`
 
 	cleanupTempFiles
-
-	echo Terminating all watch subprocesses ...
-	[ $LOGLEVEL -ge 1 ] && echo $pids
-	kill $pids
-	sleep 1
-	kill $pids 
 
 	echo Operator $base exiting now ...
 	exit 0
@@ -263,8 +266,7 @@ function run_cmd {
 		$@
 		cmd_ret=$?
 		echo "Warning ($cr): command '"$@"' exited with $cmd_ret ..." >&2
-		[ $cmd_ret -gt 128 ] && exit 1
-
+		[ $cmd_ret -gt 128 ] && echo "Warning ($cr) signal `expr $ret - 128` sent to run_cmd(), breaking out" >&2 && break 
 	done
 }
 
@@ -301,7 +303,19 @@ function start_controller {
 		echo Starting reconcile function for custom resource: $CRD_NAME/$cr
 		reconcile $cr $PIPE  # wait here 
 
-		#stop_controller $cr 
+		echo Terminating processes:
+		jobs
+
+		jobs -p  # FIXME
+		kill `jobs -p`
+		sleep 1
+
+		jobs -p
+		kill `jobs -p`
+
+		cleanupTempFiles $cr
+
+		echo Exiting controller now ...
 	) &
 	#save_pid $cr $!
 }
@@ -309,23 +323,22 @@ function start_controller {
 function stop_controller {
 	# $1 = custom resource
 	local cr=$1
-	local pids=`get_pids $cr`
+	#local pids=`get_pids $cr`
 
 	echo Stopping controller $cr ...
 
-	cleanupTempFiles $cr
 
 	#unset cr_map[$cr]
 
-	echo Terminating processes $pids
-	kill $pids
-	sleep 1
+	#echo Terminating processes $pids
+	#kill $pids
+	#sleep 1
 
-	kill $pids 
-	sleep 2
+	#kill $pids 
+	#sleep 2
 
-	echo Killing processes $pids
-	kill -9 $pids 
+	#echo Killing processes $pids
+	#kill -9 $pids 
 }
 
 function main_manager {

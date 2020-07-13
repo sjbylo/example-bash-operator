@@ -19,16 +19,16 @@ function stop_all() {
 	echo
 	echo Stopping tests ...
 
+	# Note: Must delete all CRs before can delete the CRD
 	#kubectl delete myapp --all --wait=false && sleep 2
-	kubectl delete po bash-operator --wait=false --now
+	#kubectl delete po bash-operator --wait=false --now
 
-	l=`jobs -p`; [ "$l" ] && kill $l 2>/dev/null
+	l=`jobs -p`; [ "$l" ] && kill $l 
 	sleep 1
-	l=`jobs -p`; [ "$l" ] && kill $l 2>/dev/null
+	l=`jobs -p`; [ "$l" ] && kill $l 
 
 	exit 
 }
-
 
 # Set up
 kubectl create -f $DEPLOY/service_account.yaml
@@ -36,11 +36,10 @@ kubectl create -f $DEPLOY/role.yaml
 kubectl create -f $DEPLOY/role_binding.yaml
 
 # Refresh the CRD 
-#kubectl delete -f $DEPLOY/crd-myapp.yaml 2>/dev/null
 kubectl create -f $DEPLOY/crd-myapp.yaml
 
 # Delete any CRs
-kubectl delete myapp --all --wait=false
+#kubectl delete myapp --all --wait=false
 
 # Create the deployment 
 ###sed "s/:latest/:$tag/" deploy/operator.yaml | kubectl create -f -
@@ -52,28 +51,33 @@ kubectl delete myapp --all --wait=false
 #	kubectl delete pod bash-operator --grace-period=5 # --force 
 	#kubectl delete pod bash-operator --now=true --wait=false # --grace-period=0 --force 
 
-kubectl delete pod bash-operator --now
+#kubectl delete pod bash-operator --now
 
-echo Starting operator from quay.io/sjbylo/bash-operator:$tag ...
-#kubectl run bash-operator --env=LOGLEVEL=$loglevel --env=INTERVAL_MS=6000 \
-kubectl run bash-operator --generator=run-pod/v1 --env=LOGLEVEL=$loglevel --serviceaccount=bash-operator \
-        --image-pull-policy=Always --image=quay.io/sjbylo/bash-operator:$tag || exit 1
-        #--image-pull-policy=Never --image=quay.io/sjbylo/bash-operator:$tag || exit 1
+if ! kubectl get pod bash-operator; then
+	echo Starting operator from quay.io/sjbylo/bash-operator:$tag ...
+	#kubectl run bash-operator --env=LOGLEVEL=$loglevel --env=INTERVAL_MS=6000 \
+	kubectl run bash-operator --generator=run-pod/v1 --env=LOGLEVEL=$loglevel --serviceaccount=bash-operator \
+        	--image-pull-policy=Always --image=quay.io/sjbylo/bash-operator:$tag || exit 1
 
-sleep 1
+	#kubectl run bash-operator --generator=run-pod/v1 --env=LOGLEVEL=$loglevel --serviceaccount=bash-operator \
+	#        --image-pull-policy=Never --image=quay.io/sjbylo/bash-operator:$tag || exit 1
 
-echo -n "Waiting for operator to start ... "
-while ! kubectl get pod | grep -q "bash-operator.*\bRunning\b" 
-do
-	sleep 2
-done
-echo running
+	sleep 1
+
+	echo -n "Waiting for operator to start ... "
+	while ! kubectl get pod | grep -q "bash-operator.*\bRunning\b" 
+	do
+		sleep 2
+	done
+	echo running
+fi
 
 sleep 1
 
 i=1
 while [ $i -le $cnt ]
 do
+	# Create each CR and start the tests ...
 	cat $DEPLOY/cr-myapp1.yaml | sed "s/myapp1/myapp$i/" | oc create -f -
 	$dir/test.sh myapp$i 999 $wait_time &   # If the cluster is slow, increase 12s to wait longer for test results
 	sleep $(($RANDOM % 5 + 1)) # Start tests at random times

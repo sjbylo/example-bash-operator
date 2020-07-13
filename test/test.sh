@@ -12,6 +12,19 @@ else
        exit 1
 fi
 
+dir=`dirname $0`
+DEPLOY=$dir/../deploy
+
+function addCR {
+  log="$log:adding CR $cr "
+  cat $DEPLOY/cr-myapp1.yaml | sed "s/myapp1/$cr/" | oc create -f - >/dev/null
+}
+
+function delCR {
+  log="$log:deleting CR $cr "
+  kubectl delete myapp $cr --now >/dev/null
+}
+
 function setReplica {
   log="$log:setting replica to $1 "
   kubectl patch myapp $cr --type=json -p '[{"op": "replace", "path": "/spec/replica", "value": '$1'}]' >/dev/null
@@ -46,7 +59,7 @@ function toggleImage {
 	then
 		kubectl patch myapp myapp1 --type=json -p '[{"op": "replace", "path": "/spec/image", "value": "docker/whalesay"}]' >/dev/null
 		theImage=docker/whalesay
-	else
+else
 		kubectl patch myapp myapp1 --type=json -p '[{"op": "replace", "path": "/spec/image", "value": "busybox"}]' >/dev/null
 		theImage=busybox
 	fi
@@ -62,12 +75,16 @@ function stop {
 
 echo Wait time is ${w}s for myapp/$cr ...
 
+cat $DEPLOY/cr-myapp1.yaml | sed "s/myapp1/$cr/" | oc create -f - >/dev/null 2>&1
+
 i=1
 while [ $i -le $rep ]
 do
   echo
   echo Starting round $i of $rep tests for myapp/$cr ...
   log=$cr;r=`echo $(( RANDOM % 3+1))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;r=0                        ;delCR $r;      sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
+  log=$cr;r=2                        ;addCR $r;      sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
   log=$cr;p=`echo $(( RANDOM % 2+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
   log=$cr;p=`echo $(( RANDOM % 3+1))`;addPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
   log=$cr;r=`echo $(( RANDOM % 4+1))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
@@ -76,6 +93,7 @@ do
   log=$cr;p=`echo $(( RANDOM % 1+1))`;delPod $p;     sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
   log=$cr;r=`echo $(( RANDOM % 6  ))`;setReplica $r; sleep $w;checkReplica $r && log="$log PASS" || stop; echo $log
   let i=$i+1
+  sleep $(( RANDOM % 10 ))
   echo
 done
 
