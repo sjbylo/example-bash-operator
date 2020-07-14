@@ -2,8 +2,6 @@
 
 Build, tag, push and run the tests.  Use your own image repo!
 
-[test](http://google.com){:target="_blank"}
-
 ```
 docker build -t bash_operator . && \
   docker tag bash_operator quay.io/sjbylo/bash-operator:dev && \
