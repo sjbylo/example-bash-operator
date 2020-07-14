@@ -123,13 +123,13 @@ kubectl patch myapp myapp1 --type=json -p '[{"op": "replace", "path": "/spec/rep
 Delete a pod.  The Operator will add a pod:
 
 ```
-kubectl delete pod $(kubectl get pod --selector=operator=myapp1 -oname | tail -1) --now
+kubectl delete pod $(kubectl get pod --selector=myapp=myapp1 -oname | tail -1) --now
 ```
 
 Add a pod.  The Operator will remove a pod:
 
 ```
-kubectl run myapp1-added --wait=false --image=busybox -l operator=myapp1 -- sleep 9999
+kubectl run myapp1-added --wait=false --image=busybox -l myapp=myapp1 -- sleep 9999
 ```
 
 Delete the CR itself.  The Operator will clean up all controlled pods:
@@ -203,14 +203,14 @@ The following commands are useful to follow the progress during testing.  Run th
 This command shows the controlled pods that are associated with the CR myapp1:
 
 ```
-watch -n1 kubectl get po --selector=operator=myapp1
+watch -n1 kubectl get po --selector=myapp=myapp1
 ```
 
 These commands are used by the Operator to watch events related to the Operator (the CR and its child objects). Note that any child objects (pods) that the CR controls are labeled so they can be easily identified.
 
 ```
 kubectl get myapp --watch --no-headers --ignore-not-found                           # watch the CR itself
-kubectl get pod --selector=operator=myapp1 --watch --no-headers --ignore-not-found  # watch all controlled resources 
+kubectl get pod --selector=myapp=myapp1 --watch --no-headers --ignore-not-found  # watch all controlled resources 
 ```
 
 You will need to create the CRD and the role with _cluster-admin_ permissions, otherwise you may see the following errors:
