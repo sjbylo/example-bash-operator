@@ -3,25 +3,23 @@
 
 dir=`dirname $0`
 DEPLOY=$dir/../deploy
+CRD_NAME=myapp
 
-if ! kubectl get pod bash-operator --no-headers
-then
-	CRs=`kubectl get myapp --no-headers | awk '{print $1}'`
+CRs=`kubectl get $CRD_NAME --no-headers | awk '{print $1}'`
 
-	for cr in $CRs
-	do
-		kubectl patch myapp $cr --type=merge -p '{"metadata": {"finalizers":null}}' >/dev/null
-	done
+for cr in $CRs
+do
+	kubectl patch $CRD_NAME $cr --type=merge -p '{"metadata": {"finalizers":null}}' >/dev/null
+done
 
-	kubectl delete pods --selector=crd=myapp --wait=false
-else
-	# Delete all CRs
-	# Must delete all of the CRs and cleanup before the CRD can be deleted
-	kubectl delete myapp --all #--wait=false
+kubectl delete pods --selector=$CRD_NAME --wait=false
 
-	# Delete the operator
-	oc delete po bash-operator --now 
-fi
+# Delete all CRs
+# Must delete all of the CRs and cleanup before the CRD can be deleted
+#kubectl delete $CRD_NAME --all 
+
+# Delete the operator
+kubectl delete pod bash-operator --now 
 
 # Remove service account, role and binding
 kubectl delete -f $DEPLOY/service_account.yaml
