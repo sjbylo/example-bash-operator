@@ -17,7 +17,7 @@ DEPLOY=$dir/../deploy
 
 function addCR {
   log="$log:adding CR $cr "
-  cat $DEPLOY/cr-myapp1.yaml | sed "s/myapp1/$cr/" | oc create -f - >/dev/null
+  cat $DEPLOY/cr-myapp1.yaml | sed "s/myapp1/$cr/" | kubectl create -f - >/dev/null
 }
 
 function delCR {
@@ -75,7 +75,7 @@ function stop {
 
 echo Wait time is ${w}s for myapp/$cr ...
 
-cat $DEPLOY/cr-myapp1.yaml | sed "s/myapp1/$cr/" | oc create -f - >/dev/null 2>&1
+cat $DEPLOY/cr-myapp1.yaml | sed "s/myapp1/$cr/" | kubectl create -f - >/dev/null 2>&1
 
 i=1
 while [ $i -le $rep ]

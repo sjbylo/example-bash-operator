@@ -78,7 +78,7 @@ i=1
 while [ $i -le $cnt ]
 do
 	# Create each CR and start the tests ...
-	cat $DEPLOY/cr-myapp1.yaml | sed "s/myapp1/myapp$i/" | oc create -f -
+	cat $DEPLOY/cr-myapp1.yaml | sed "s/myapp1/myapp$i/" | kubectl create -f -
 	$dir/test.sh myapp$i 999 $wait_time &   # If the cluster is slow, increase 12s to wait longer for test results
 	#sleep $(($RANDOM % 5 + 1)) # Start tests at random times
 	let i=$i+1
