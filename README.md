@@ -25,6 +25,13 @@ oc new-project operator-test
 
 ### Test the Operator using the provided scripts
 
+First, clone this repo!
+
+```
+git clone https://github.com/sjbylo/example-bash-operator.git
+cd example-bash-operator
+```
+
 The quick way to test this is to run the following commands in separate terminals with cluster-admin permissions. This will set up the CRD and the CRs, roles and permissions, launch the Operator and run the tests.  Note that the first time this is run, the test images (busybox and whalesay) need to be pulled, so the tests might timeout and fail.  Just try again if this happens.  
 
 ```
