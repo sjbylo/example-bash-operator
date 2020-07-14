@@ -8,7 +8,7 @@ The Operator is able to control multiple custom resources in a single namespace.
 
 ## Getting started
 
-You'll need access to a Kubernetes cluster and the kubectl tool.  Here is how to [install kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/). If you don't have access to a cluster, you could try installing [Minikube](https://minikube.sigs.k8s.io/docs/) on your workstation. 
+You'll need access to a Kubernetes cluster and the kubectl tool.  Here is how to [install kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/). If you don't have access to a cluster, you could try installing [Minikube](https://minikube.sigs.k8s.io/docs/) on your workstation.  Or open up Kubernetes in your browser at [Katacoda Playground](https://katacoda.com/courses/kubernetes/playground).
 
 Log into Kubernetes and then create a namespace and switch to it:
 
@@ -157,9 +157,7 @@ test/test.sh myapp1
 
 The Operator can be tested by running it directly on a Linux machine.  It has been tested on the following: MacOS (with brew), RHEL 7.5, Fedora 32, Minikube, Kubernetes 1.17 and OpenShift 4.4.
 
-Note that, for local testing purposes, the operator.sh script will also work on Mac OS (Darwin) as long as bash is v4 or above and gtr and gdate are installed with brew. 
-
-The Operator requires bash version 4 or above because it makes use of associative arrays.
+Note that, for local testing purposes, the operator.sh script will also work on Mac OS (Darwin) as long as bash is v4 or above and gtr and gdate are installed with 'brew install coreutils'.  The Operator requires bash version 4 or above because it makes use of associative arrays.
 
 On a Linux machine, ensure kubectl is installed and authenticated with a Kubernetes or OpenShift cluster.  Also ensure that "jq" is installed.
 
