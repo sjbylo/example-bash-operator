@@ -4,7 +4,7 @@
 if [ "$1" ]
 then
 	cr=$1		# the custom resource to test, e.g. myapp1
-	rep=${2-99999}	# number of test rounds, default is continious
+	rep=${2-99999}	# number of test rounds, default is continuous
 	w=${3-15}	# time to wait for each test succeed or fail
 else
        echo "Usage `basename $0` <cr object name> <repetitions> <wait time>"
@@ -35,7 +35,7 @@ function checkReplica {
 }
 
 function delPod {
-  log="$log:deleteing $1 pod(s) "
+  log="$log:deleting $1 pod(s) "
   kubectl get po --selector=myapp=$cr --no-headers 2>/dev/null | \
     grep -e "\bRunning\b" -e "\bContainerCreating\b" -e "\bPending\b" | tail -$1 | awk '{print $1}' | \
     xargs kubectl delete po --wait=false >/dev/null 2>/dev/null
