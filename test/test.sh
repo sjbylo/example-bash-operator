@@ -31,12 +31,12 @@ function setReplica {
 }
 
 function checkReplica {
-  test $1 -eq `kubectl get po --selector=operator=$cr 2>/dev/null| grep -e "\bRunning\b" -e "\bContainerCreating\b" -e "\bPending\b" | wc -l`
+  test $1 -eq `kubectl get po --selector=myapp=$cr 2>/dev/null| grep -e "\bRunning\b" -e "\bContainerCreating\b" -e "\bPending\b" | wc -l`
 }
 
 function delPod {
   log="$log:deleteing $1 pod(s) "
-  kubectl get po --selector=operator=$cr --no-headers 2>/dev/null | \
+  kubectl get po --selector=myapp=$cr --no-headers 2>/dev/null | \
     grep -e "\bRunning\b" -e "\bContainerCreating\b" -e "\bPending\b" | tail -$1 | awk '{print $1}' | \
     xargs kubectl delete po --wait=false >/dev/null 2>/dev/null
 }
@@ -48,8 +48,8 @@ function addPod {
   local i=0
   while [ $i -lt $1 ]
   do
-      kubectl run $cr-$RANDOM --wait=false --restart=Never --image=$theImage -l operator=$cr -- sleep 99999999 >/dev/null 2>&1
-      #kubectl run $cr-$RANDOM --wait=false --restart=Never --image=$theImage -l operator=$cr --image-pull-policy=Never -- sleep 99999999 >/dev/null 2>&1
+      kubectl run $cr-$RANDOM --wait=false --restart=Never --image=$theImage -l myapp=$cr -- sleep 99999999 >/dev/null 2>&1
+      #kubectl run $cr-$RANDOM --wait=false --restart=Never --image=$theImage -l myapp=$cr --image-pull-policy=Never -- sleep 99999999 >/dev/null 2>&1
       let i=$i+1
   done
 }

@@ -109,7 +109,7 @@ function timeUp {
 function getRunningPods {
 	local cr=$1
 
-	running_pods="`kubectl get pod --selector=operator=$cr --ignore-not-found --no-headers | \
+	running_pods="`kubectl get pod --selector=$CRD_NAME=$cr --ignore-not-found --no-headers | \
 		grep -e "\bRunning\b" -e "\bPending\b" -e "\bContainerCreating\b"| \
 		awk '{print $1}'`"
 	[ "$running_pods" ] && running_pod_count=`echo "$running_pods" | wc -l | $TR_CMD -d " "` || running_pod_count=0
@@ -155,7 +155,7 @@ function reconcile {
 				# Check if the object is being deleted ...
 				if [ "$metadata_deletionTimestamp" != "null" ]; then 
 					[ $LOGLEVEL -ge 1 ] && echo "Deleting all controlled pods for $cr" >&2
-					kubectl delete pod --selector=operator=$cr --now --wait=false >/dev/null
+					kubectl delete pod --selector=$CRD_NAME=$cr --now --wait=false >/dev/null
 
 					# Remove the finalizers ... allow the CR object to be garbage collected 
 					kubectl patch myapp $cr --type=json -p '[{"op": "remove", "path": "/metadata/finalizers"}]' >/dev/null
@@ -163,7 +163,7 @@ function reconcile {
 					return 0  # This will stop and clean up the controller 
 				fi
 			#elif [ "$obj" = "cleanup" ]; then  # FIXME only needed if completed pods need to be deleted
-				#kubectl delete pod --selector=operator=$cr --now --wait=false --field-selector status.phase=Succeeded >/dev/null 
+				#kubectl delete pod --selector=$CRD_NAME=$cr --now --wait=false --field-selector status.phase=Succeeded >/dev/null 
 			else
 				[ $LOGLEVEL -ge 1 ] && echo "Warning ($cr): Unknown object type [$obj]" >&2
 				# return # This should never happen (but it does!) 
@@ -190,7 +190,7 @@ function reconcile {
 			[ $LOGLEVEL -ge 1 ] && echo "[$state_image] [$spec_image] [$state_cmd] [$spec_cmd]" >&2
 
 			# Remove all the controlled pods ...
-			kubectl delete pods --selector=operator=$cr --now --wait=false >/dev/null
+			kubectl delete pods --selector=$CRD_NAME=$cr --now --wait=false >/dev/null
 
 			# Remember what the expected state will be
 			state_image=$spec_image
@@ -224,7 +224,7 @@ function reconcile {
 			log=$log"Replica mismatch, adjusting pod count by $delta"
 			while [ $delta -gt 0 ]
 			do
-				kubectl run $cr-`make_random_str` --wait=false --restart=Never --image=$spec_image -l operator=$cr -- $spec_cmd >/dev/null
+				kubectl run $cr-`make_random_str` --wait=false --restart=Never --image=$spec_image -l $CRD_NAME=$cr -- $spec_cmd >/dev/null
 				# FIXME: Add in "metadata.ownerReferences" 
 				let delta=$delta-1
 			done
@@ -282,7 +282,7 @@ function start_controller {
 
 		kubectl patch myapp $cr --type=json -p '[{"op": "add", "path": "/metadata/finalizers", "value": ["finalizer.stable.example.com"]}]' >/dev/null
 
-		#run_cmd kubectl get pod --selector=operator=$cr $watch_opts | prepend pod >> $PIPE &
+		#run_cmd kubectl get pod --selector=$CRD_NAME=$cr $watch_opts | prepend pod >> $PIPE &
 
 		echo Starting reconcile function for custom resource: $CRD_NAME/$cr
 		reconcile $cr $PIPE  # the reconcile function runs until the controller ends.
