@@ -130,7 +130,7 @@ kubectl patch myapp myapp1 --type=json -p '[{"op": "replace", "path": "/spec/rep
 Delete a pod.  The Operator will add a pod:
 
 ```
-kubectl delete pod $(kubectl get pod --selector=myapp=myapp1 -oname | tail -1) --now
+kubectl delete $(kubectl get pod --selector=myapp=myapp1 -oname | tail -1) --now
 ```
 
 Add a pod.  The Operator will remove a pod:
