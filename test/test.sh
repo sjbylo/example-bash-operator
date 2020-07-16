@@ -57,10 +57,10 @@ function addPod {
 function toggleImage {
 	if [ "$theImage" = "busybox" ]
 	then
-		kubectl patch myapp myapp1 --type=json -p '[{"op": "replace", "path": "/spec/image", "value": "docker/whalesay"}]' >/dev/null
+		kubectl patch myapp $cr --type=json -p '[{"op": "replace", "path": "/spec/image", "value": "docker/whalesay"}]' >/dev/null
 		theImage=docker/whalesay
 else
-		kubectl patch myapp myapp1 --type=json -p '[{"op": "replace", "path": "/spec/image", "value": "busybox"}]' >/dev/null
+		kubectl patch myapp $cr --type=json -p '[{"op": "replace", "path": "/spec/image", "value": "busybox"}]' >/dev/null
 		theImage=busybox
 	fi
 	log="$log:switching image to $theImage "
