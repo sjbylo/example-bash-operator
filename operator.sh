@@ -19,7 +19,7 @@ type gtr   2>/dev/null >&2 && TR_CMD=gtr     || TR_CMD=tr
 
 echo MyApp Operator process ID: $$
 
-INTERVAL_MS=${INTERVAL_MS-3000}     # time to wait in ms before making changes to controlled pods in the reconcile function.
+INTERVAL_MS=${INTERVAL_MS-5000}     # time to wait in ms before making changes to controlled pods in the reconcile function.
 [ $LOGLEVEL -ge 1 ] && echo INTERVAL_MS=$INTERVAL_MS
 
 
@@ -136,7 +136,7 @@ function reconcile {
 	# Loop through all the events from the watched objects (in this case just myapp objects).
 	while true
 	do
-		read -t1 event   # -t timeout used so we have a chance to make changes. 
+		read -t2 event   # -t timeout used so we have a chance to make changes. 
 		ret=$?
 		[ $LOGLEVEL -ge 1 -a "$event" ] && echo "ret=[$ret] event=[$event]" >&2
 
