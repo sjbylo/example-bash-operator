@@ -36,7 +36,8 @@ kubectl create -f $DEPLOY/role.yaml
 kubectl create -f $DEPLOY/role_binding.yaml
 
 # Refresh the CRD 
-kubectl create -f $DEPLOY/crd-myapp.yaml
+kubectl create -f $DEPLOY/crd-myapp.yaml || \
+  ( sed "s/\/v1/\/v1beta1/" $DEPLOY/crd-myapp.yaml | kubectl create -f - ) # needed on older versions of kube
 
 # Delete any CRs
 #kubectl delete myapp --all --wait=false
