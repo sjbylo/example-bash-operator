@@ -27,5 +27,6 @@ kubectl delete -f $DEPLOY/role.yaml
 kubectl delete -f $DEPLOY/role_binding.yaml
 
 # Refresh the CRD 
-kubectl delete -f $DEPLOY/crd-myapp.yaml
+kubectl delete -f $DEPLOY/crd-myapp.yaml || \
+  ( sed "s/\/v1/\/v1beta1/" $DEPLOY/crd-myapp.yaml | kubectl delete -f - ) # needed on older versions of kube
 
