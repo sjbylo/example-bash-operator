@@ -32,7 +32,7 @@ git clone https://github.com/sjbylo/example-bash-operator.git
 cd example-bash-operator
 ```
 
-The quick way to test this is to run the following commands in separate terminals with cluster-admin permissions. This will set up the CRD and the CRs, roles and permissions, launch the Operator and run the tests.  Note that the first time this is run, the test images (busybox and whalesay) need to be pulled, so the tests might timeout and fail.  Just try again if this happens.  
+The quick way to test this is to run the following commands in separate terminals with cluster-admin permissions. This will set up the Custom Resource Definition (CRD) and the Custom Resources (CR), roles and permissions, launch the Operator and run the tests.  Note that the first time this is run, the test images (busybox and whalesay) need to be pulled, so the tests might timeout and fail.  Just try again if this happens.  
 
 ```
 test/startall.sh 1            # run tests on one CR 
@@ -80,7 +80,7 @@ Now create a test CR called "myapp1":
 kubectl create -f deploy/cr-myapp1.yaml	 
 ```
 
-Have a look at the "myapp1" Customer Resource.  Note that "replica" is set to the required number of pods.
+Have a look at the "myapp1" Custom Resource.  Note that "replica" is set to the required number of pods.
 
 ```
 kubectl get myapp myapp1 -o yaml | grep replica
