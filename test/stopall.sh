@@ -19,7 +19,8 @@ kubectl delete pods --selector=$CRD_NAME --wait=false
 #kubectl delete $CRD_NAME --all 
 
 # Delete the operator
-kubectl delete pod bash-operator --now 
+#kubectl delete pod bash-operator --now 
+kubectl delete deployment bash-operator 
 
 # Remove service account, role and binding
 kubectl delete -f $DEPLOY/service_account.yaml

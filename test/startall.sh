@@ -43,7 +43,7 @@ kubectl create -f $DEPLOY/crd-myapp.yaml || \
 #kubectl delete myapp --all --wait=false
 
 # Create the deployment 
-###sed "s/:latest/:$tag/" deploy/operator.yaml | kubectl create -f -
+sed "s/:latest/:$tag/" deploy/operator.yaml | kubectl create -f -
 #kubectl set env deployment/bash-operator INTERVAL_MS=6000
 #kubectl set env deployment/bash-operator LOGLEVEL=$loglevel
 
@@ -54,7 +54,8 @@ kubectl create -f $DEPLOY/crd-myapp.yaml || \
 
 #kubectl delete pod bash-operator --now
 
-if ! kubectl get pod bash-operator; then
+#if ! kubectl get pod bash-operator; then
+if false; then
 	echo Starting operator from quay.io/sjbylo/bash-operator:$tag ...
 	#kubectl run bash-operator --env=LOGLEVEL=$loglevel --env=INTERVAL_MS=6000 \
 	kubectl run bash-operator --generator=run-pod/v1 --env=LOGLEVEL=$loglevel --serviceaccount=bash-operator \
@@ -64,17 +65,18 @@ if ! kubectl get pod bash-operator; then
 	#        --image-pull-policy=Never --image=quay.io/sjbylo/bash-operator:$tag || exit 1
 
 	sleep 1
-
-	echo -n "Waiting for operator to start ... "
-	while ! kubectl get pod | grep -q "bash-operator.*\bRunning\b" 
-	do
-		sleep 2
-	done
-	echo running
 fi
+
+echo -n "Waiting for operator to start ... "
+while ! kubectl get pod | grep -q "bash-operator.*\bRunning\b" 
+do
+	sleep 2
+done
+echo running
 
 sleep 1
 
+# Run the tests in the background 
 i=1
 while [ $i -le $cnt ]
 do
