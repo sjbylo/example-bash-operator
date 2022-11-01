@@ -8,7 +8,7 @@ The Operator is able to control multiple custom resources in a single namespace.
 
 ## Getting started
 
-You'll need access to a Kubernetes cluster and the kubectl tool.  Here is how to [install kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/). If you don't have access to a cluster, you could try installing [Minikube](https://minikube.sigs.k8s.io/docs/) on your workstation.  Or open up Kubernetes in your browser at [Katacoda Playground](https://katacoda.com/courses/kubernetes/playground).
+You'll need access to a Kubernetes cluster and the kubectl tool.  Here is how to [install kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/). If you don't have access to a cluster, you could try installing [Minikube](https://minikube.sigs.k8s.io/docs/) on your workstation.  Or open up Kubernetes in your browser at [Killercoda Playground](https://killercoda.com/kubernetes/scenario/a-playground).
 
 Log into Kubernetes and then create a namespace and switch to it:
 
