@@ -45,8 +45,30 @@ In separate terminals run the following commands to view what's happening:
 watch -n1 kubectl get pods    # View the controlled pods
 ```
 
+To view what the Operator is doing, run:
+
 ```
-test/logs.sh    # View Operator output
+test/logs.sh  
+LOGLEVEL=1
+MyApp Operator process ID: 6
+INTERVAL_MS=4000
+Starting watch for custom resource: myapp/myapp1
+Starting reconcile function for custom resource: myapp/myapp1
+myapp1 0/1 running. Replica mismatch, adjusting pod count by 1
+myapp1 1/1 running. Nothing to do
+Terminating processes:
+Exiting controller for myapp/myapp1 ...
+Starting watch for custom resource: myapp/myapp1
+Starting reconcile function for custom resource: myapp/myapp1
+myapp1 0/2 running. Replica mismatch, adjusting pod count by 2
+myapp1 2/2 running. Nothing to do
+myapp1 1/2 running. Replica mismatch, adjusting pod count by 1
+myapp1 2/2 running. Nothing to do
+myapp1 2/2 running. Nothing to do
+myapp1 2/2 running. Image or command change, replacing all pods ...
+myapp1 2/2 running. Nothing to do
+myapp1 4/2 running. Replica mismatch, adjusting pod count by -2
+...
 ```
 
 
