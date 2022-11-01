@@ -6,10 +6,10 @@ USER root
 # Install jq for json parsing
 RUN \
 	microdnf install gzip tar && \
-	curl -Lo /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && \
+	curl -Lso /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && \
 		chmod 755 /usr/local/bin/jq && \
-	curl -o - https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz | \
-		tar xzv -C /usr/local/bin -f - oc kubectl && \
+	curl -Lso - https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz | \
+		gunzip --stdout | tar xv -C /usr/local/bin -f - oc kubectl && \
 		chmod 755 /usr/local/bin/oc 
 
 # Set a location for the script, ensure kubectl can write to /.kube
