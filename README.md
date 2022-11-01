@@ -1,3 +1,5 @@
+[![Docker Repository on Quay](https://quay.io/repository/sjbylo/bash-operator/status "Docker Repository on Quay")](https://quay.io/repository/sjbylo/bash-operator)
+
 # Example Kubernetes Operator in bash
 
 This project was created for fun and learning purposes only!
